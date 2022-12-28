@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="it">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Apple II emulator, coding, emulation, apple">
+        <meta name="keywords" content="fun">
+    
+        <link rel="icon" type="image/png" href="img/favicon.ico"/>
+        <title>Almost ][ - version 0.3a</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="css/main.css"/>
+        
+        <script src="js/a2vdc.js"></script>
+        <script src="js/cassette.js"></script>
+        <script src="js/mmu.js"></script>
+        <script src="js/cpu6502.js"></script>
+        <script src="js/main.js"></script>
+    </head>
+
+    <body>
+        <div><img style="position:relative;top:2px" width=80 src="img/almost2logo.png" /> - Apple II emulator v0.3a going at <span id="fpsSpan">-</span></div>
+        <div id="debuggerDiv">
+        </div>
+        <canvas width=800 height=400 id="mainCanvass" style="display:none"></canvas>
+        <canvas width=280 height=192 id="a2display" style="border: white 1px solid"></canvas>
+        <br/>
+        <button onclick="go()">Go!</button><br/>
+        <img width="38" id="tapeImg" src="img/tapeframe.gif" />
+    </body>
+</html>
