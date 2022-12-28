@@ -1,4 +1,4 @@
-/* apple ][ VDC */
+/* apple ][ display chip */
 
 class apple2vdc
 {
@@ -245,7 +245,7 @@ class apple2vdc
         }
     }
 
-    drawGraphicsMode(theMMU,ctx)
+    drawLoresScreen(theMMU,ctx)
     {
         var baseAddr=0x400;
         for (var row=0;row<24/3;row++)
@@ -279,8 +279,63 @@ class apple2vdc
     
             baseAddr+=8; // "screen holes"
         }
+    }
 
+    drawGraphicsPixel(x,y,curByte)
+    {
+        for (var bit=0;bit<7;bit++)
+        {
+            var bitcol=((curByte>>bit)&0x01);
+            if (bitcol==0)
+            {
+                this.glbFrameBuffer[(x+bit+(y*this.glbResolutionX))*4]=0;
+                this.glbFrameBuffer[((x+bit+(y*this.glbResolutionX))*4)+1]=0;
+                this.glbFrameBuffer[((x+bit+(y*this.glbResolutionX))*4)+2]=0;
+                this.glbFrameBuffer[((x+bit+(y*this.glbResolutionX))*4)+3]=255;
+            }
+            else
+            {
+                this.glbFrameBuffer[(x+bit+(y*this.glbResolutionX))*4]=255;
+                this.glbFrameBuffer[((x+bit+(y*this.glbResolutionX))*4)+1]=255;
+                this.glbFrameBuffer[((x+bit+(y*this.glbResolutionX))*4)+2]=255;
+                this.glbFrameBuffer[((x+bit+(y*this.glbResolutionX))*4)+3]=255;
+            }
+        }
+    }
 
+    // great doc on how the high resolution works here: https://www.xtof.info/hires-graphics-apple-ii.html
+    drawHiresScreen(theMMU,ctx)
+    {
+        var curAddr=0x2000;
+
+        // the 'Woz' sequence to save a couple of chips :)
+        var addrArray=[
+            0x2000,0x2080,0x2100,0x2180,0x2200,0x2280,0x2300,0x2380,
+            0x2028,0x20a8,0x2128,0x21a8,0x2228,0x22a8,0x2328,0x23a8,
+            0x2050,0x20d0,0x2150,0x21d0,0x2250,0x22d0,0x2350,0x23d0
+        ];
+
+        var acounter=0;
+        var y=0;
+        for (var r=0;r<192/8;r++)
+        {
+            var addrAdder=0;
+            for (var rb=0;rb<8;rb++)
+            {
+                var x=0;
+                for (var b=0;b<40;b++)
+                {
+                    var curByte=theMMU.readAddr(addrArray[acounter]+addrAdder+b);
+                    this.drawGraphicsPixel(x,y,curByte);
+                    x+=7;
+                }
+
+                addrAdder+=0x400;
+                y+=1;
+            }
+            
+            acounter+=1;
+        }        
     }
 
     hyperBlit(ctx)
@@ -300,21 +355,25 @@ class apple2vdc
 
     setTextMode()
     {
+        console.log("setting text mode");
         this.mode=0;
     }
 
     setMixedGraphics(v)
     {
+        console.log("setting mixed mode to "+v);
         this.mixedGraph=v;        
     }
 
     setGraphicsMode()
     {
+        console.log("setting gfx mode");
         this.mode=1;
     }
 
     setHires(h)
     {
+        console.log("setting hires mode to "+h);
         this.hires=h;
     }
 
@@ -326,7 +385,14 @@ class apple2vdc
         }
         else
         {
-            this.drawGraphicsMode(theMMU,this.ctx);
+            if (this.hires==false)
+            {
+                this.drawLoresScreen(theMMU,this.ctx);
+            }
+            else
+            {
+                this.drawHiresScreen(theMMU,this.ctx);
+            }
         }
 
         this.hyperBlit(this.ctx);

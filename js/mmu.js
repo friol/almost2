@@ -93,6 +93,12 @@ class a2mmu
             this.kbd&=0x7f;
             return 0;
         }
+        else if (addr==0xc020)
+        {
+            // someone explain me what is this doing
+            // documentation says "Toggle Cassette Tape Output"
+            return 0;
+        }
         else if (addr==0xc030)
         {
             // click the speaker
