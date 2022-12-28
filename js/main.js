@@ -28,15 +28,8 @@ function initCPU()
 
 function go()
 {
-    // good tapes: https://cowgod.org/apple2/tapes/
-    glbCassette=new cassette();
-    glbCassette.loadMedia("tapes/applevision.wav");
-    //glbCassette.loadMedia("tapes/supermath.wav");
-    //glbCassette.loadMedia("tapes/color-demos.wav");
-    //glbCassette.loadMedia("tapes/breakout.wav");
-    //glbCassette.loadMedia("tapes/hangman.wav"); 
-    //glbCassette.loadMedia("tapes/Telepong.wav"); 
-    glbMMU.setCassette(glbCassette);
+    document.getElementById("partyStarter").disabled = true;
+
     glbMMU.setVDC(glbVDC);
 
     document.getElementById("tapeImg").src="img/minitape.gif";
@@ -62,9 +55,33 @@ function emulate()
 
     var fpsOut = document.getElementById('fpsSpan');
     var fpeez=(1000/frameTime).toFixed(1);
-    fpsOut.innerHTML = fpeez + " fps";
+    fpsOut.innerHTML = "going at " + fpeez + " fps";
 
     setTimeout(emulate,10);
+}
+
+function handleFileUpload(fls)
+{
+	var arrayBuffer;
+	var fileReader = new FileReader();
+	fileReader.onload = function(event) 
+	{
+		var fname=document.getElementById("tapeSelector").value;
+
+		if ((fname.toLowerCase().indexOf(".wav")<0)&&(fname.indexOf(".")>0))
+		{
+			alert("You can only load .wav files");
+			return;
+		}
+
+		arrayBuffer = event.target.result;
+
+        // good tapes: https://cowgod.org/apple2/tapes/
+        glbCassette=new cassette();
+        glbCassette.loadMedia(arrayBuffer);
+        glbMMU.setCassette(glbCassette);
+	};
+	fileReader.readAsArrayBuffer(fls[0]);	
 }
 
 window.onload = (event) => 
@@ -72,6 +89,7 @@ window.onload = (event) =>
     glbMMU=new a2mmu();
     glbCPU=new cpu6502(glbMMU);
     glbVDC=new apple2vdc();
+   
 
     document.onkeydown = function(e)
 	{
@@ -127,6 +145,11 @@ window.onload = (event) =>
             e.preventDefault();
         }
     }
+
+    const splashImg=document.getElementById("splashImg");
+    var canvas = document.getElementById("a2display");
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(splashImg,0,0);
 
     setTimeout(initCPU,100);
 }

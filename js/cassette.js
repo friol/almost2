@@ -13,11 +13,11 @@ class cassette
         this.sampleRate=44100;
     }
 
-    loadMedia(fullpath)
+    loadMedia(abuf)
     {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         var audioCtx = new AudioContext({sampleRate: this.sampleRate});
-        var audioFile = fetch(fullpath).then(response => response.arrayBuffer()).then(buffer => audioCtx.decodeAudioData(buffer)).then(buffer => 
+        var audioFile = audioCtx.decodeAudioData(abuf).then(buffer => 
         {
             this.rawData = buffer.getChannelData(0);
             this.rawData.forEach(element => {

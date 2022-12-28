@@ -107,6 +107,9 @@ class apple2vdc
         {
             this.glbFrameBuffer[i]=0;
         }        
+
+        var canvas = document.getElementById("a2display");
+        this.ctx = canvas.getContext("2d");
     }
 
     drawTextmodeChar(col,row,chnum,ctx)
@@ -300,6 +303,11 @@ class apple2vdc
         this.mode=0;
     }
 
+    setMixedGraphics(v)
+    {
+        this.mixedGraph=v;        
+    }
+
     setGraphicsMode()
     {
         this.mode=1;
@@ -312,22 +320,18 @@ class apple2vdc
 
     draw(theMMU)
     {
-        var canvas = document.getElementById("a2display");
-        var ctx = canvas.getContext("2d");
-
         if (this.mode==0)
         {
-            this.drawTextMode(theMMU,ctx);
+            this.drawTextMode(theMMU,this.ctx);
         }
         else
         {
-            this.drawGraphicsMode(theMMU,ctx);
+            this.drawGraphicsMode(theMMU,this.ctx);
         }
 
-        this.hyperBlit(ctx);
+        this.hyperBlit(this.ctx);
     
         // next frame, please
         this.glbFrameNum+=1;
     }
-   
 }

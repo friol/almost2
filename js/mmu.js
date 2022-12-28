@@ -110,6 +110,18 @@ class a2mmu
             this.vdc.setTextMode();
             return 0;
         }
+        else if (addr==0xc052)
+        {
+            // set fullscreen mode
+            this.vdc.setMixedGraphics(false);
+            return 0;
+        }
+        else if (addr==0xc053)
+        {
+            // set mixed mode
+            this.vdc.setMixedGraphics(true);
+            return 0;
+        }
         else if (addr==0xc057)
         {
             // set hires graphics
@@ -174,6 +186,26 @@ class a2mmu
         {
             // RAM
             this.ram64k[addr]=value;
+        }
+        else if (addr==0xc050)
+        {
+            // set graphics mode
+            this.vdc.setGraphicsMode();
+        }
+        else if (addr==0xc052)
+        {
+            // set fullscreen mode
+            this.vdc.setMixedGraphics(false);
+        }
+        else if (addr==0xc053)
+        {
+            // set mixed mode
+            this.vdc.setMixedGraphics(true);
+        }
+        else if (addr==0xc057)
+        {
+            // set hires graphics
+            this.vdc.setHires(true);
         }
         else
         {
