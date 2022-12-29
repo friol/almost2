@@ -2,6 +2,25 @@
 
 html
 {
-    font-size: 12px;
+    font-size: 18px;
     font-family: 'Roboto', sans-serif;
+}
+
+@keyframes zoominoutsinglefeatured {
+    0% {
+        transform: scale(1,1);
+    }
+    50% {
+        transform: scale(1.2,1.2);
+    }
+    100% {
+        transform: scale(1,1);
+    }
+}
+
+.cassetteImg 
+{
+	animation: zoominoutsinglefeatured 1s infinite ;
+    display: none;
+    margin-top:10px;
 }

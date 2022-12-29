@@ -21,20 +21,29 @@ function updateDebugger()
     glbCPU.drawDebugInfo(listOfOpcodes,10,30);
 }
 
-function initCPU()
-{
-    glbCPU.powerUp();   
-}
-
 function go()
 {
     document.getElementById("partyStarter").disabled = true;
+    setTimeout(preload,100);
+}
 
-    glbMMU.setVDC(glbVDC);
-
-    document.getElementById("tapeImg").src="img/minitape.gif";
-
-    setTimeout(emulate,100);
+function preload()
+{
+    // wait for rom's loading 
+    
+    if (glbMMU.romsLoaded)
+    {
+        glbCPU=new cpu6502(glbMMU);
+        glbCPU.powerUp();   
+        glbVDC=new apple2vdc();
+        glbMMU.setVDC(glbVDC);
+        setTimeout(emulate,10);
+    }
+    else
+    {
+        // roms not loaded. wait another 100ms
+        setTimeout(preload,100);
+    }
 }
 
 function emulate()
@@ -46,6 +55,10 @@ function emulate()
     }
     //updateDebugger();
     glbVDC.draw(glbMMU);
+    if (glbMMU.cyclesWithoutCassetteRead>100)
+    {
+        document.getElementById("tapeImg").style.display="none";
+    }
 
     // calc fps
     const filterStrength = 20;
@@ -87,9 +100,6 @@ function handleFileUpload(fls)
 window.onload = (event) => 
 {
     glbMMU=new a2mmu();
-    glbCPU=new cpu6502(glbMMU);
-    glbVDC=new apple2vdc();
-   
 
     document.onkeydown = function(e)
 	{
@@ -144,12 +154,15 @@ window.onload = (event) =>
             glbMMU.pressKey(11);
             e.preventDefault();
         }
+        else if (e.key=="Escape")
+        {
+            glbMMU.pressKey(27);
+            e.preventDefault();
+        }
     }
 
     const splashImg=document.getElementById("splashImg");
     var canvas = document.getElementById("a2display");
     var ctx = canvas.getContext("2d");
     ctx.drawImage(splashImg,0,0);
-
-    setTimeout(initCPU,100);
 }

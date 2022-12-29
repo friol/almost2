@@ -15,6 +15,7 @@ class a2mmu
         this.cassetteMedia=undefined;
         this.vdc=undefined;
         this.curCycles=0;
+        this.cyclesWithoutCassetteRead=0;
 
         this.kbd=0;
 
@@ -37,7 +38,7 @@ class a2mmu
               thisInstance.a2rom.push(uint8ArrayNew[c]);
           }
 
-          this.romsLoaded=true;
+          thisInstance.romsLoaded=true;
         };
         oReq.send();
     }
@@ -45,6 +46,7 @@ class a2mmu
     setCycles(c)
     {
         this.curCycles=c;
+        this.cyclesWithoutCassetteRead++;
     }
 
     setCassette(c)
@@ -64,7 +66,7 @@ class a2mmu
 
     readAddr(addr)
     {
-        if (
+        /*if (
             (addr !== addr) // is NaN?
             || (typeof addr !== "number")
             || (addr !== Math.floor(addr))
@@ -75,7 +77,7 @@ class a2mmu
             alert("readAddr::Bad address ["+addr+"]");
         }
 
-        addr&=0xffff;
+        addr&=0xffff;*/
 
         if ((addr>=0)&&(addr<=0xbfff))
         {
@@ -139,6 +141,8 @@ class a2mmu
             // cassette read
             if (this.cassetteMedia!=undefined)
             {
+                this.cyclesWithoutCassetteRead=0;
+                document.getElementById("tapeImg").style.display="block";
                 return this.cassetteMedia.readByte(this.curCycles);
             }
             return 0;
@@ -176,7 +180,7 @@ class a2mmu
 
     writeAddr(addr,value)
     {
-        if (
+        /*if (
             (addr !== addr) // is NaN?
             || (typeof addr !== "number")
             || (addr !== Math.floor(addr))
@@ -186,7 +190,7 @@ class a2mmu
         {
             alert("writeAddr::Bad address ["+addr+"]");
         }
-        addr&=0xffff;
+        addr&=0xffff;*/
 
         if ((addr>=0)&&(addr<=0xbfff))
         {

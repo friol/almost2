@@ -6,7 +6,6 @@ class cassette
     {
         this.mediaLoaded=false;
         this.initialCycle=0;
-        this.startingPos=0;
         this.rawData=undefined;
         this.maxSignal=-100;
         this.minSignal=100;
@@ -24,24 +23,6 @@ class cassette
                 if (element>this.maxSignal) this.maxSignal=element;
                 if (element<this.minSignal) this.minSignal=element;
             });
-
-            var pos=0;
-            this.rawData.forEach(element => {
-                var curSig=element+Math.abs(this.minSignal);
-                curSig/=Math.abs(this.minSignal)+this.maxSignal;
-                curSig*=255.0;
-                curSig=parseInt(curSig.toFixed());
-                /*if (this.startingPos==0)
-                {
-                    if (curSig>0xa0)
-                    {
-                        this.startingPos=pos;
-                    }
-                }*/
-                pos+=1;
-            });
-
-
         });
     }
 
@@ -52,7 +33,7 @@ class cassette
             this.initialCycle=curCycle;
         }
 
-        var audioPos=(((curCycle-this.initialCycle)*this.sampleRate)/1000000)+this.startingPos;
+        var audioPos=(((curCycle-this.initialCycle)*this.sampleRate)/1000000);
         audioPos=parseInt(audioPos.toFixed());
         if (audioPos<this.rawData.length)        
         {
@@ -60,10 +41,6 @@ class cassette
             curSig/=Math.abs(this.minSignal)+this.maxSignal;
             curSig*=255.0;
             var finalByte=parseInt(curSig.toFixed());
-            if ((finalByte<0)||(finalByte>255))
-            {
-                alert("ALARM");
-            }
             return finalByte&0x80;
         }
 

@@ -20,15 +20,16 @@
     </head>
 
     <body>
-        <div><img style="position:relative;top:2px" width=80 src="img/almost2logo.png" /> - Apple II emulator v0.4a <span id="fpsSpan"></span></div>
+        <div><img style="position:relative;top:2px" width=110 src="img/almost2logo.png" /> - Apple II emulator v0.4a <span id="fpsSpan"></span></div>
         <div id="debuggerDiv">
         </div>
         <canvas width=800 height=400 id="mainCanvass" style="display:none"></canvas>
-        <canvas width=280 height=192 id="a2display" style="border: white 1px solid"></canvas>
+        <!--<canvas width=280 height=192 id="a2display" style="border: white 1px solid;width:560px;height:384px;"></canvas>-->
+        <canvas width=280 height=192 id="a2display" style="border: white 1px solid;width:50%;"></canvas>
         <br/>
         <button id="partyStarter" onclick="go()">Start emulation!</button><br/>
         <input type="file" id="tapeSelector" onchange="handleFileUpload(this.files)">        
-        <img width="38" id="tapeImg" src="img/tapeframe.gif" />
-        <img id="splashImg" src="img/s2.png" style="display: none;" />
+        <img width="52" class="cassetteImg" id="tapeImg" src="img/minitape.gif" />
+        <img id="splashImg" src="img/s3.png" style="display: none;" />
     </body>
 </html>
