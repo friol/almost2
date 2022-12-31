@@ -23,14 +23,16 @@ function updateDebugger()
 
 function go()
 {
+    glbMMU=new a2mmu();
     document.getElementById("partyStarter").disabled = true;
+    document.getElementById("romversionSelect").disabled=true;
     setTimeout(preload,100);
 }
 
 function preload()
 {
     // wait for rom's loading 
-    
+
     if (glbMMU.romsLoaded)
     {
         glbCPU=new cpu6502(glbMMU);
@@ -99,8 +101,6 @@ function handleFileUpload(fls)
 
 window.onload = (event) => 
 {
-    glbMMU=new a2mmu();
-
     document.onkeydown = function(e)
 	{
 		if (e.key=="F10")

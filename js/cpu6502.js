@@ -4,7 +4,7 @@ class cpu6502
 {
     constructor(theMmu)
     {
-        this.frequency=1000000;
+        this.frequency=1023000; //1.023mhz
 
         this.startLogging=false;
         this.loggingCount=0;

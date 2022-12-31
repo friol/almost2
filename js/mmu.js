@@ -24,7 +24,12 @@ class a2mmu
 
         var thisInstance=this;
         var oReq = new XMLHttpRequest();
-        oReq.open("GET", "roms/A2ROM.BIN", true);
+
+        const romVer=document.getElementById("romversionSelect").value;
+        var romName="apple2p.bin";
+        if (romVer=="apple2") romName="A2ROM.BIN";
+
+        oReq.open("GET", "roms/"+romName, true);
         oReq.responseType = "arraybuffer";
         
         oReq.onload = function(oEvent) 
@@ -128,6 +133,24 @@ class a2mmu
         {
             // set mixed mode
             this.vdc.setMixedGraphics(true);
+            return 0;
+        }
+        else if (addr==0xc054)
+        {
+            // set page1
+            this.vdc.setPage(0);
+            return 0;
+        }
+        else if (addr==0xc055)
+        {
+            // set page2
+            this.vdc.setPage(1);
+            return 0;
+        }
+        else if (addr==0xc056)
+        {
+            // set lores graphics
+            this.vdc.setHires(false);
             return 0;
         }
         else if (addr==0xc057)

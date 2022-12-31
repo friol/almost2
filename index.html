@@ -7,7 +7,7 @@
         <meta name="keywords" content="Apple II emulator, coding, emulation, apple, wozniak, jobs, 1978">
     
         <link rel="icon" type="image/png" href="img/favicon.ico"/>
-        <title>Almost ][ - version 0.4a</title>
+        <title>Almost ][ - version 0.5a</title>
 
         <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="css/main.css"/>
@@ -20,16 +20,29 @@
     </head>
 
     <body>
-        <div><img style="position:relative;top:2px" width=110 src="img/almost2logo.png" /> - Apple II emulator v0.4a <span id="fpsSpan"></span></div>
+        <div><img style="position:relative;top:2px" width=110 src="img/almost2logo.png" /> - Apple II emulator v0.5a <span id="fpsSpan"></span></div>
         <div id="debuggerDiv">
         </div>
         <canvas width=800 height=400 id="mainCanvass" style="display:none"></canvas>
-        <!--<canvas width=280 height=192 id="a2display" style="border: white 1px solid;width:560px;height:384px;"></canvas>-->
-        <canvas width=280 height=192 id="a2display" style="border: white 1px solid;width:50%;"></canvas>
+        <canvas width=560 height=384 id="a2display" style="width:50%;"></canvas>
         <br/>
         <button id="partyStarter" onclick="go()">Start emulation!</button><br/>
         <input type="file" id="tapeSelector" onchange="handleFileUpload(this.files)">        
+
+        <br/>
+        <label for="romversion">Rom version</label>
+        <select name="romversion" id="romversionSelect">
+          <option value="apple2plus">Apple ][+</option>
+          <option value="apple2">Apple ][</option>
+        </select>
+
         <img width="52" class="cassetteImg" id="tapeImg" src="img/minitape.gif" />
-        <img id="splashImg" src="img/s3.png" style="display: none;" />
+
+        <div id="videoDebugInfo">
+
+        </div>
+
+        <!-- great Apple wallpaper from here https://wallpaperaccess.com/apple-2 -->
+        <img id="splashImg" src="img/s4.png" style="display: none;" />
     </body>
 </html>

@@ -93,14 +93,19 @@ class apple2vdc
 
         this.glbFrameNum=0;
         this.glbFrameBuffer;
+
         this.glbImgData=undefined;
         this.glbCanvasRenderer=undefined;
+        this.glbImgData2=undefined;
+        this.glbCanvasRenderer2=undefined;
+
         this.glbResolutionX=280;
         this.glbResolutionY=192;
 
         this.mode=0; // text mode, 1=graphics
         this.mixedGraph=false; 
         this.hires=false;
+        this.page=0; // PAGE1 or PAGE2
 
         this.glbFrameBuffer=new Uint8ClampedArray(this.glbResolutionX*this.glbResolutionY*4);
         for (var i=0;i<(this.glbResolutionX*this.glbResolutionY*4);i++)
@@ -247,7 +252,7 @@ class apple2vdc
 
     drawLoresScreen(theMMU,ctx)
     {
-        var baseAddr=0x400;
+        var baseAddr=0x400+(this.page*0x400);
         for (var row=0;row<24/3;row++)
         {
             var realRow=row;
@@ -281,32 +286,14 @@ class apple2vdc
         }
     }
 
-    drawGraphicsPixel(x,y,curByte)
-    {
-        for (var bit=0;bit<7;bit++)
-        {
-            var bitcol=((curByte>>bit)&0x01);
-            if (bitcol==0)
-            {
-                this.glbFrameBuffer[(x+bit+(y*this.glbResolutionX))*4]=0;
-                this.glbFrameBuffer[((x+bit+(y*this.glbResolutionX))*4)+1]=0;
-                this.glbFrameBuffer[((x+bit+(y*this.glbResolutionX))*4)+2]=0;
-                this.glbFrameBuffer[((x+bit+(y*this.glbResolutionX))*4)+3]=255;
-            }
-            else
-            {
-                this.glbFrameBuffer[(x+bit+(y*this.glbResolutionX))*4]=255;
-                this.glbFrameBuffer[((x+bit+(y*this.glbResolutionX))*4)+1]=255;
-                this.glbFrameBuffer[((x+bit+(y*this.glbResolutionX))*4)+2]=255;
-                this.glbFrameBuffer[((x+bit+(y*this.glbResolutionX))*4)+3]=255;
-            }
-        }
-    }
-
     // great doc on how the high resolution works here: https://www.xtof.info/hires-graphics-apple-ii.html
+    // also, this answer here explains things even more in depth https://retrocomputing.stackexchange.com/questions/6271/what-determines-the-color-of-every-8th-pixel-on-the-apple-ii
+
     drawHiresScreen(theMMU,ctx)
     {
-        var curAddr=0x2000;
+        const dblSizeX=560;
+        const dblSizeY=384; 
+        var pageAdder=this.page*0x2000;
 
         // the 'Woz' sequence to save a couple of chips :)
         var addrArray=[
@@ -315,19 +302,76 @@ class apple2vdc
             0x2050,0x20d0,0x2150,0x21d0,0x2250,0x22d0,0x2350,0x23d0
         ];
 
+        // hires decoding algorithm readapted from https://github.com/chris-torrence/apple2ts/blob/f51dac657d65a7198c7b78e0f34c3983bed41aab/src/canvas.tsx
+        const hgrColors = new Uint8Array(dblSizeX * dblSizeY).fill(0);
+
         var acounter=0;
         var y=0;
-        for (var r=0;r<192/8;r++)
+        for (var r=0;r<this.glbResolutionY/8;r++)
         {
             var addrAdder=0;
             for (var rb=0;rb<8;rb++)
             {
                 var x=0;
+                const joffset = y * dblSizeX;
+                let imaxLine = (y + 1) * dblSizeX - 1;
+                let isEven = 1;
+                let skip = false;
+                let previousWhite = false;
+                
                 for (var b=0;b<40;b++)
                 {
-                    var curByte=theMMU.readAddr(addrArray[acounter]+addrAdder+b);
-                    this.drawGraphicsPixel(x,y,curByte);
-                    x+=7;
+                    const byte1=theMMU.readAddr(addrArray[acounter]+pageAdder+addrAdder+b);
+                    const byte2bit0 = (b < 39) ? (theMMU.readAddr(addrArray[acounter]+pageAdder+addrAdder+b+1) & 1) : 0;
+
+                    const ioffset = joffset + b * 14;
+                    const highBit = (byte1 & 128) ? 1 : 0
+
+                    for (let b = 0; b <= 6; b++) 
+                    {
+                      if (skip) 
+                      {
+                        skip = false;
+                        continue;
+                      }
+
+                      const bit1 = byte1 & (1 << b);
+                      const bit2 = (b < 6) ? (byte1 & (1 << (b + 1))) : byte2bit0;
+
+                      if (bit1) 
+                      {
+                        let istart = ioffset + 2 * b + highBit
+                        let imax = istart + 3;
+
+                        let color1 = previousWhite ? 3 : 1 + 4 * highBit + isEven;
+                        let color = color1;
+                        if (bit2) 
+                        {
+                          color = 3;
+                          imax += 2;
+                          previousWhite = true;
+                        } 
+                        else 
+                        {
+                          previousWhite = false;
+                        }
+                        if (imax > imaxLine) imax = imaxLine;
+
+                        hgrColors[istart] = color1;
+
+                        for (let ix = istart + 1; ix <= imax; ix++) 
+                        {
+                          hgrColors[ix] = color;
+                        }
+
+                        skip = true;
+                      } 
+                      else 
+                      {
+                        previousWhite = false;
+                        isEven = 1 - isEven;
+                      }
+                    }
                 }
 
                 addrAdder+=0x400;
@@ -336,12 +380,60 @@ class apple2vdc
             
             acounter+=1;
         }        
+
+        // blit
+
+        const hgrRGBcolors=[
+            [0,0,0],
+            [67,195,0],
+            [182,61,255],
+            [255,255,255],
+            [0,0,0],
+            [234,93,21],
+            [16,164,227],
+            [255,255,255]
+        ];
+
+        var fb2=new Uint8ClampedArray(dblSizeX*dblSizeY*4);
+        var hpos=0;
+        var fbpos=0;
+
+        for (var py=0;py<dblSizeY;py+=2)
+        {
+            for (var px=0;px<dblSizeX;px++)
+            {
+                fb2[fbpos+0]=hgrRGBcolors[hgrColors[hpos]][0];
+                fb2[fbpos+1]=hgrRGBcolors[hgrColors[hpos]][1];
+                fb2[fbpos+2]=hgrRGBcolors[hgrColors[hpos]][2];
+                fb2[fbpos+3]=255;
+                fb2[fbpos+0+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][0];
+                fb2[fbpos+1+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][1];
+                fb2[fbpos+2+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][2];
+                fb2[fbpos+3+(dblSizeX*4)]=255;
+                hpos+=1;
+                fbpos+=4;
+            }
+
+            fbpos+=dblSizeX*4;
+        }
+
+        if (this.glbImgData2==undefined) this.glbImgData2 = ctx.getImageData(0, 0, dblSizeX, dblSizeY);
+        this.glbImgData2.data.set(fb2);
+    
+        if (this.glbCanvasRenderer2==undefined)
+        {
+            this.glbCanvasRenderer2 = document.createElement('canvas');
+            this.glbCanvasRenderer2.width = this.glbImgData2.width;
+            this.glbCanvasRenderer2.height = this.glbImgData2.height;
+        }
+        this.glbCanvasRenderer2.getContext('2d').putImageData(this.glbImgData2, 0, 0);
+        ctx.drawImage(this.glbCanvasRenderer2,0,0,dblSizeX,dblSizeY);
     }
 
-    hyperBlit(ctx)
+    hyperBlit(ctx,fbsrc,resx,resy)
     {
-        if (this.glbImgData==undefined) this.glbImgData = ctx.getImageData(0, 0, this.glbResolutionX, this.glbResolutionY);
-        this.glbImgData.data.set(this.glbFrameBuffer);
+        if (this.glbImgData==undefined) this.glbImgData = ctx.getImageData(0, 0, resx, resy);
+        this.glbImgData.data.set(fbsrc);
     
         if (this.glbCanvasRenderer==undefined)
         {
@@ -350,7 +442,7 @@ class apple2vdc
             this.glbCanvasRenderer.height = this.glbImgData.height;
         }
         this.glbCanvasRenderer.getContext('2d').putImageData(this.glbImgData, 0, 0);
-        ctx.drawImage(this.glbCanvasRenderer,0,0,this.glbResolutionX,this.glbResolutionY);
+        ctx.drawImage(this.glbCanvasRenderer,0,0,560,384);
     }
 
     setTextMode()
@@ -377,25 +469,31 @@ class apple2vdc
         this.hires=h;
     }
 
+    setPage(p)
+    {
+        console.log("setting page to "+(p+1));
+        this.page=p;
+    }
+
     draw(theMMU)
     {
         if (this.mode==0)
         {
             this.drawTextMode(theMMU,this.ctx);
+            this.hyperBlit(this.ctx,this.glbFrameBuffer,this.glbResolutionX,this.glbResolutionY);
         }
         else
         {
             if (this.hires==false)
             {
                 this.drawLoresScreen(theMMU,this.ctx);
+                this.hyperBlit(this.ctx,this.glbFrameBuffer,this.glbResolutionX,this.glbResolutionY);
             }
             else
             {
                 this.drawHiresScreen(theMMU,this.ctx);
             }
         }
-
-        this.hyperBlit(this.ctx);
     
         // next frame, please
         this.glbFrameNum+=1;
