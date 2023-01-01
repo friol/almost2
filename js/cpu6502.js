@@ -2322,6 +2322,11 @@ class cpu6502
             }
             case 0xbd:
             {
+                if (this.pc==47439)
+                {
+                    var ddd=0;
+                }
+
                 // LDA absolute,X
                 var operand=this.mmu.readAddr16bit(this.pc+1);
                 var addressToRead=(operand+this.x)&0xffff;
@@ -2808,13 +2813,12 @@ class cpu6502
             {
                 // unknown instruction
                 alert("Error: unknown instruction ["+nextOpcode.toString(16)+"] at ["+this.pc.toString(16)+"]");
-                globalEmuStatus=0;
             }
         }
 
         if ((this.x==undefined)||(this.y==undefined)||(this.a==undefined)||(this.pc==undefined)||(this.sp==undefined))
         {
-            alert("x,y,a,pc or sp undefined. Last opcode was ["+nextOpcode.toString(16)+"]");
+            alert("x,y,a,pc or sp undefined. X:["+this.x+"] Y:["+this.y+"] A:["+this.a+"] PC:["+this.pc+"] Last opcode was ["+nextOpcode.toString(16)+"]");
         }
 
         if (!jumped) this.pc+=this.instructionTable[nextOpcode][0];

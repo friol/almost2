@@ -4,6 +4,8 @@ var glbMMU;
 var glbCPU;
 var glbVDC;
 var glbCassette;
+var glbDisk;
+var glbDiskii;
 var glbTotCycles=0;
 var glbTapeSprite;
 
@@ -33,12 +35,13 @@ function preload()
 {
     // wait for rom's loading 
 
-    if (glbMMU.romsLoaded)
+    if ((glbMMU.romsLoaded)&&(glbDiskii.romsLoaded))
     {
         glbCPU=new cpu6502(glbMMU);
         glbCPU.powerUp();   
         glbVDC=new apple2vdc();
         glbMMU.setVDC(glbVDC);
+        glbMMU.setDiskII(glbDiskii);
         setTimeout(emulate,10);
     }
     else
@@ -60,6 +63,10 @@ function emulate()
     if (glbMMU.cyclesWithoutCassetteRead>100)
     {
         document.getElementById("tapeImg").style.display="none";
+    }
+    if (glbMMU.cyclesWithoutDiskRead>1000000)
+    {
+        document.getElementById("diskImg").style.display="none";
     }
 
     // calc fps
@@ -91,10 +98,32 @@ function handleFileUpload(fls)
 
 		arrayBuffer = event.target.result;
 
-        // good tapes: https://cowgod.org/apple2/tapes/
         glbCassette=new cassette();
         glbCassette.loadMedia(arrayBuffer);
         glbMMU.setCassette(glbCassette);
+	};
+	fileReader.readAsArrayBuffer(fls[0]);	
+}
+
+function handleDiskUpload(fls)
+{
+	var arrayBuffer;
+	var fileReader = new FileReader();
+	fileReader.onload = function(event) 
+	{
+		var fname=document.getElementById("diskSelector").value;
+
+		if ((fname.toLowerCase().indexOf(".nib")<0)&&(fname.indexOf(".")>0))
+		{
+			alert("You can only load .nib files");
+			return;
+		}
+
+		arrayBuffer = event.target.result;
+
+        glbDisk=new disk();
+        glbDisk.loadMedia(arrayBuffer);
+        glbDiskii.setDisk(glbDisk.theDisk);
 	};
 	fileReader.readAsArrayBuffer(fls[0]);	
 }
@@ -129,7 +158,7 @@ window.onload = (event) =>
             glbMMU.pressKey(e.key.charCodeAt(0));
             e.preventDefault();
         }
-        else if ((e.key=="\\")||(e.key==";")||(e.key=="?")||(e.key=="^")||(e.key==">")||(e.key=="<")||(e.key=="#")||(e.key=="\/")||(e.key=="*")||(e.key==",")||(e.key=="!")||(e.key=="$")||(e.key=="(")||(e.key==")")||(e.key=="=")||(e.key=="\"")||(e.key==" ")||(e.key=="+")||(e.key=="-")||(e.key==":")||(e.key=="."))
+        else if ((e.key=="'")||(e.key=="\\")||(e.key==";")||(e.key=="?")||(e.key=="^")||(e.key==">")||(e.key=="<")||(e.key=="#")||(e.key=="\/")||(e.key=="*")||(e.key==",")||(e.key=="!")||(e.key=="$")||(e.key=="(")||(e.key==")")||(e.key=="=")||(e.key=="\"")||(e.key==" ")||(e.key=="+")||(e.key=="-")||(e.key==":")||(e.key=="."))
         {
             glbMMU.pressKey(e.key.charCodeAt(0));
             e.preventDefault();
@@ -165,4 +194,6 @@ window.onload = (event) =>
     var canvas = document.getElementById("a2display");
     var ctx = canvas.getContext("2d");
     ctx.drawImage(splashImg,0,0);
+
+    glbDiskii=new disk2();
 }

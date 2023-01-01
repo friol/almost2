@@ -13,9 +13,11 @@ class a2mmu
 
         this.a2rom=new Array();
         this.cassetteMedia=undefined;
+        this.diskii=undefined;
         this.vdc=undefined;
         this.curCycles=0;
         this.cyclesWithoutCassetteRead=0;
+        this.cyclesWithoutDiskRead=0;
 
         this.kbd=0;
 
@@ -31,7 +33,6 @@ class a2mmu
 
         oReq.open("GET", "roms/"+romName, true);
         oReq.responseType = "arraybuffer";
-        
         oReq.onload = function(oEvent) 
         {
           var arrayBuffer = oReq.response;
@@ -52,6 +53,7 @@ class a2mmu
     {
         this.curCycles=c;
         this.cyclesWithoutCassetteRead++;
+        this.cyclesWithoutDiskRead++;
     }
 
     setCassette(c)
@@ -62,6 +64,11 @@ class a2mmu
     setVDC(vdc)
     {
         this.vdc=vdc;
+    }
+
+    setDiskII(d2)
+    {
+        this.diskii=d2;
     }
 
     pressKey(chcode)
@@ -98,7 +105,7 @@ class a2mmu
         {
             // kbd latch reset
             this.kbd&=0x7f;
-            return 0;
+            return this.kbd;
         }
         else if (addr==0xc020)
         {
@@ -109,6 +116,7 @@ class a2mmu
         else if (addr==0xc030)
         {
             // click the speaker
+            // todo
             return 0;
         }
         else if (addr==0xc050)
@@ -169,6 +177,23 @@ class a2mmu
                 return this.cassetteMedia.readByte(this.curCycles);
             }
             return 0;
+        }
+        else if ((addr>=0xc0e0)&&(addr<=0xc0ef))
+        {
+            // disk drive read (slot 6)
+
+            if (addr==0xc0ec)
+            {
+                this.cyclesWithoutDiskRead=0;
+                document.getElementById("diskImg").style.display="block";
+            }
+
+            return this.diskii.diskRead(addr);
+        }
+        else if ((addr>=0xc600)&&(addr<=0xc6ff))
+        {
+            // we assume disk drive interface is in slot 6
+            return this.diskii.diskiirom[addr-0xc600];
         }
         else if ((addr>=0xd000)&&(addr<=0xffff))
         {
@@ -239,6 +264,11 @@ class a2mmu
         {
             // set hires graphics
             this.vdc.setHires(true);
+        }
+        else if ((addr>=0xc0e0)&&(addr<=0xc0ef))
+        {
+            // disk drive write (slot 6)
+            this.diskii.diskWrite(addr,value);
         }
         else
         {

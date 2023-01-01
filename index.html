@@ -14,6 +14,8 @@
         
         <script src="js/a2vdc.js"></script>
         <script src="js/cassette.js"></script>
+        <script src="js/disk.js"></script>
+        <script src="js/diskii.js"></script>
         <script src="js/mmu.js"></script>
         <script src="js/cpu6502.js"></script>
         <script src="js/main.js"></script>
@@ -27,8 +29,8 @@
         <canvas width=560 height=384 id="a2display" style="width:50%;"></canvas>
         <br/>
         <button id="partyStarter" onclick="go()">Start emulation!</button><br/>
-        <input type="file" id="tapeSelector" onchange="handleFileUpload(this.files)">        
-
+        <input type="file" id="tapeSelector" onchange="handleFileUpload(this.files)">Select tape image (.wav)</input><br/>
+        <input type="file" id="diskSelector" onchange="handleDiskUpload(this.files)">Select disk image (.nib)</input>
         <br/>
         <label for="romversion">Rom version</label>
         <select name="romversion" id="romversionSelect">
@@ -36,11 +38,8 @@
           <option value="apple2">Apple ][</option>
         </select>
 
-        <img width="52" class="cassetteImg" id="tapeImg" src="img/minitape.gif" />
-
-        <div id="videoDebugInfo">
-
-        </div>
+        <img width="52" class="mediaImg" id="tapeImg" src="img/minitape.gif" style="display:none" />
+        <img width="52" class="mediaImg" id="diskImg" src="img/disk.png" style="display:none" />
 
         <!-- great Apple wallpaper from here https://wallpaperaccess.com/apple-2 -->
         <img id="splashImg" src="img/s4.png" style="display: none;" />
