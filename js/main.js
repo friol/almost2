@@ -13,6 +13,10 @@ var glbTapeSprite;
 var frameTime = 0;
 var lastLoop = new Date;
 var thisLoop=undefined;
+var glbScheduleInterval=10;
+
+const appleiiFps=60;
+const appleiiCPUSpeed=1023000;
 
 //
 
@@ -53,9 +57,12 @@ function preload()
 
 function emulate()
 {
-    for (var c=0;c<10000;c++)
+    var iniCycles=0;
+    while (iniCycles<(appleiiCPUSpeed/appleiiFps))
     {
-        glbTotCycles+=glbCPU.executeOneOpcode();
+        var cycElapsed=glbCPU.executeOneOpcode();
+        glbTotCycles+=cycElapsed;
+        iniCycles+=cycElapsed;
         glbMMU.setCycles(glbTotCycles);
     }
     //updateDebugger();
@@ -79,7 +86,18 @@ function emulate()
     var fpeez=(1000/frameTime).toFixed(1);
     fpsOut.innerHTML = "going at " + fpeez + " fps";
 
-    setTimeout(emulate,10);
+    if (fpeez<appleiiFps)
+    {
+        // accelerate!
+        if (glbScheduleInterval>1) glbScheduleInterval--;
+    }
+    else if (fpeez>appleiiFps)
+    {
+        // brake pls!
+        glbScheduleInterval++;
+    }
+
+    setTimeout(emulate,glbScheduleInterval);
 }
 
 function handleFileUpload(fls)
@@ -142,6 +160,12 @@ window.onload = (event) =>
             drawTextMode();
             e.preventDefault();*/
         }
+        else if (e.key=="Delete")
+        {
+            // pushbutton zero
+            glbMMU.pushbutton0();
+            e.preventDefault();
+        }
 		else if ((e.ctrlKey==true)&&(e.key=="c"))
 		{
             // CTRL-C
@@ -183,6 +207,11 @@ window.onload = (event) =>
             glbMMU.pressKey(11);
             e.preventDefault();
         }
+        else if (e.key=="ArrowRight")
+        {
+            glbMMU.pressKey(21);
+            e.preventDefault();
+        }
         else if (e.key=="Escape")
         {
             glbMMU.pressKey(27);
@@ -192,7 +221,7 @@ window.onload = (event) =>
 
     const splashImg=document.getElementById("splashImg");
     var canvas = document.getElementById("a2display");
-    var ctx = canvas.getContext("2d");
+    var ctx = canvas.getContext("2d",{ willReadFrequently: true });
     ctx.drawImage(splashImg,0,0);
 
     glbDiskii=new disk2();

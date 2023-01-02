@@ -2322,11 +2322,6 @@ class cpu6502
             }
             case 0xbd:
             {
-                if (this.pc==47439)
-                {
-                    var ddd=0;
-                }
-
                 // LDA absolute,X
                 var operand=this.mmu.readAddr16bit(this.pc+1);
                 var addressToRead=(operand+this.x)&0xffff;

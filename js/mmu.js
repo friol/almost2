@@ -20,6 +20,9 @@ class a2mmu
         this.cyclesWithoutDiskRead=0;
 
         this.kbd=0;
+        this.pb0=0;
+        this.pb1=0;
+        this.pb2=0;
 
         // load Apple ][ rom
         this.romsLoaded=false;
@@ -74,6 +77,11 @@ class a2mmu
     pressKey(chcode)
     {
         this.kbd=0x80|chcode;
+    }
+
+    pushbutton0()
+    {
+        this.pb0=0xff;
     }
 
     readAddr(addr)
@@ -178,6 +186,19 @@ class a2mmu
             }
             return 0;
         }
+        else if (addr==0xc061)
+        {
+            // pushbutton0
+            if (this.pb0==0xff)
+            {
+                this.pb0=0;
+                return 0xff;
+            }
+            else
+            {
+                return 0;
+            }
+        }
         else if ((addr>=0xc0e0)&&(addr<=0xc0ef))
         {
             // disk drive read (slot 6)
@@ -245,10 +266,20 @@ class a2mmu
             // RAM
             this.ram64k[addr]=value;
         }
+        else if (addr==0xc010)
+        {
+            // kbd latch reset
+            this.kbd&=0x7f;
+        }
         else if (addr==0xc050)
         {
             // set graphics mode
             this.vdc.setGraphicsMode();
+        }
+        else if (addr==0xc051)
+        {
+            // set text mode
+            this.vdc.setTextMode();
         }
         else if (addr==0xc052)
         {
