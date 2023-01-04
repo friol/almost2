@@ -7,6 +7,12 @@ html
     /*background-color: black;*/
 }
 
+#trackSpan
+{
+    padding-top: 10px;
+    font-size: 10px;
+}
+
 @keyframes zoominoutsinglefeatured {
     0% {
         transform: scale(1,1);

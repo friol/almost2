@@ -1,4 +1,4 @@
-/* wooot tape! */
+/* wooot, tape! */
 
 class cassette
 {

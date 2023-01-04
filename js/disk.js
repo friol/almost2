@@ -1,4 +1,4 @@
-/* disk media */
+/* disk media - .nib format */
 
 class disk
 {

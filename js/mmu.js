@@ -15,6 +15,7 @@ class a2mmu
         this.cassetteMedia=undefined;
         this.diskii=undefined;
         this.vdc=undefined;
+        this.speaker=undefined;
         this.curCycles=0;
         this.cyclesWithoutCassetteRead=0;
         this.cyclesWithoutDiskRead=0;
@@ -39,7 +40,6 @@ class a2mmu
         oReq.onload = function(oEvent) 
         {
           var arrayBuffer = oReq.response;
-          var byteArray = new Uint8Array(arrayBuffer);
           var uint8ArrayNew  = new Uint8Array(arrayBuffer);
 
           for (var c=0;c<12288;c++)
@@ -67,6 +67,11 @@ class a2mmu
     setVDC(vdc)
     {
         this.vdc=vdc;
+    }
+
+    setSpeaker(s)
+    {
+        this.speaker=s;
     }
 
     setDiskII(d2)
@@ -124,7 +129,7 @@ class a2mmu
         else if (addr==0xc030)
         {
             // click the speaker
-            // todo
+            this.speaker.toggleSpeaker();
             return 0;
         }
         else if (addr==0xc050)
@@ -271,6 +276,11 @@ class a2mmu
             // kbd latch reset
             this.kbd&=0x7f;
         }
+        else if (addr==0xc030)
+        {
+            // click the speaker
+            this.speaker.toggleSpeaker();
+        }
         else if (addr==0xc050)
         {
             // set graphics mode
@@ -290,6 +300,16 @@ class a2mmu
         {
             // set mixed mode
             this.vdc.setMixedGraphics(true);
+        }
+        else if (addr==0xc054)
+        {
+            // set page1
+            this.vdc.setPage(0);
+        }
+        else if (addr==0xc056)
+        {
+            // set lores graphics
+            this.vdc.setHires(false);
         }
         else if (addr==0xc057)
         {

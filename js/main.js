@@ -1,4 +1,4 @@
-/* almost ][ - 2k22 */
+/* almost ][ - 2k22-2k23 */
 
 var glbMMU;
 var glbCPU;
@@ -6,6 +6,7 @@ var glbVDC;
 var glbCassette;
 var glbDisk;
 var glbDiskii;
+var glbSpeaker;
 var glbTotCycles=0;
 var glbTapeSprite;
 
@@ -45,6 +46,8 @@ function preload()
         glbCPU.powerUp();   
         glbVDC=new apple2vdc();
         glbMMU.setVDC(glbVDC);
+        glbSpeaker=new soundBeeper(appleiiCPUSpeed,appleiiFps);
+        glbMMU.setSpeaker(glbSpeaker);
         glbMMU.setDiskII(glbDiskii);
         setTimeout(emulate,10);
     }
@@ -63,6 +66,7 @@ function emulate()
         var cycElapsed=glbCPU.executeOneOpcode();
         glbTotCycles+=cycElapsed;
         iniCycles+=cycElapsed;
+        glbSpeaker.feed(cycElapsed);
         glbMMU.setCycles(glbTotCycles);
     }
     //updateDebugger();
@@ -74,6 +78,7 @@ function emulate()
     if (glbMMU.cyclesWithoutDiskRead>1000000)
     {
         document.getElementById("diskImg").style.display="none";
+        document.getElementById("trackSpan").style.display="none";
     }
 
     // calc fps
@@ -192,7 +197,7 @@ window.onload = (event) =>
             glbMMU.pressKey(13);
             e.preventDefault();
         }
-		else if (e.key=="Backspace")
+		else if ((e.key=="ArrowLeft")||(e.key=="Backspace"))
 		{
             glbMMU.pressKey(8);
             e.preventDefault();

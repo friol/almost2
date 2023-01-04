@@ -1,7 +1,16 @@
-/* apple disk II */
+
+/* 
+    Apple Disk II (or Disk ][) 
+
+    from Wikipedia: DiskII was designed by Steve Wozniak at the recommendation of Mike Markkula, and manufactured by Apple Computer, Inc. 
+    It went on sale in June 1978 at a retail price of US$495 for pre-order; it was later sold for $595 (equivalent to $2,470 in 2021) 
+    including the controller card (which can control up to two drives) and cable
+    
+*/
 
 // very simple and understandable DiskII emulation
 // https://github.com/ArthurFerreira2/reinette-II-plus/blob/master/reinetteII%2B.c
+// also https://porkrind.org/a2/
 
 class disk2
 {
@@ -26,7 +35,6 @@ class disk2
         oReq.onload = function(oEvent) 
         {
           var arrayBuffer = oReq.response;
-          var byteArray = new Uint8Array(arrayBuffer);
           var uint8ArrayNew  = new Uint8Array(arrayBuffer);
 
           for (var c=0;c<256;c++)
@@ -70,26 +78,30 @@ class disk2
             return;
         }
     
-        if (this.phasesBB[(phase + 1) & 3]) // head is moving in
+        // track is decreasing
+        if (this.phasesBB[(phase + 1) & 3])
         {
-            this.halfTrackPos--;
-            if (this.halfTrackPos<0)
+            if (this.halfTrackPos>0)
             {
-                this.halfTrackPos=0;
+                this.halfTrackPos--;
+                document.getElementById("trackSpan").innerHTML="Track "+Math.floor((this.halfTrackPos+1)/2);
+                document.getElementById("trackSpan").style.display="block";
             }
         }
     
-        if (this.phasesBB[(phase - 1) & 3]) // head is moving out
+        // track is increasing
+        if (this.phasesBB[(phase - 1) & 3])
         {
-            this.halfTrackPos++;
-            if (this.halfTrackPos>140)
+            if (this.halfTrackPos<69)
             {
-                this.halfTrackPos = 140;
+                this.halfTrackPos++;
+                document.getElementById("trackSpan").innerHTML="Track "+Math.floor((this.halfTrackPos+1)/2);
+                document.getElementById("trackSpan").style.display="block";
             }
         }
     
         this.phases[phase] = true;
-        this.track = Math.floor((this.halfTrackPos+1)/2); // update track number
+        this.track = Math.floor((this.halfTrackPos+1)/2);
     }
 
     diskRead(addr)
@@ -123,6 +135,7 @@ class disk2
             //console.log("DiskII::reading from disk track "+this.track.toString());
             if (this.writeMode)
             {
+                // todo
             }
             else                                                               
             {
@@ -132,6 +145,7 @@ class disk2
                     if (diskOffset>=232960)
                     {
                         alert("DiskII::warning: software is trying to read beyond the end of the disk");
+                        return 0;
                     }
                     this.driveLatch=this.diskPtr[diskOffset];
                 }
