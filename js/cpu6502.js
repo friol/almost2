@@ -4,7 +4,7 @@ class cpu6502
 {
     constructor(theMmu)
     {
-        this.frequency=1023000; //1.023mhz
+        this.frequency=1022720; // 14.31818 MHz master oscillator / 14
 
         this.startLogging=false;
         this.loggingCount=0;

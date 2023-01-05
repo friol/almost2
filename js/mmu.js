@@ -129,7 +129,7 @@ class a2mmu
         else if (addr==0xc030)
         {
             // click the speaker
-            this.speaker.toggleSpeaker();
+            this.speaker.toggleSpeaker(this.curCycles);
             return 0;
         }
         else if (addr==0xc050)
@@ -279,7 +279,7 @@ class a2mmu
         else if (addr==0xc030)
         {
             // click the speaker
-            this.speaker.toggleSpeaker();
+            this.speaker.toggleSpeaker(this.curCycles);
         }
         else if (addr==0xc050)
         {

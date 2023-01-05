@@ -4,14 +4,13 @@ class soundBeeper
 {
     constructor(cpuspeed,fps)
     {
-        this.cushion=10;
-        this.bufferLen=Math.floor(cpuspeed/fps)+this.cushion;
+        this.bufferLen=16384;//Math.floor(cpuspeed/fps);
         this.bufferPos=0;
 
         this.audioBufSize=1024;
 
-        this.audioBuffer=new Array(this.bufferLen);
-        for (var s=0;s<this.bufferLen;s++)
+        this.audioBuffer=new Array(this.bufferLen*64);
+        for (var s=0;s<this.bufferLen*64;s++)
         {
             this.audioBuffer[s]=0.0;
         }
@@ -51,15 +50,12 @@ class soundBeeper
     {
         for (var s=0;s<numCycles;s++)
         {
-            if (this.bufferPos<this.bufferLen)
-            {
-                this.audioBuffer[this.bufferPos]=this.speakerState;
-                this.bufferPos+=1;
-            }
+            this.audioBuffer[this.bufferPos]=this.speakerState;
+            this.bufferPos+=1;
         }        
     }
 
-    toggleSpeaker()
+    toggleSpeaker(cycles)
     {
         if (this.speakerState==0) this.speakerState=1;
         else this.speakerState=0;
@@ -73,12 +69,14 @@ class soundBeeper
         var data = e.outputBuffer.getChannelData(0);
 
         // resample
-        var realPos=0.0;
-        var realStep=this.bufferLen/this.audioBufSize;
 
-        for (var i=0;i<this.audioBufSize;i++)
+        var realPos=0;
+        var realStep;
+        realStep=this.bufferLen/data.length;
+
+        for (var s=0;s<data.length;s++)
         {
-            data[i]=this.audioBuffer[Math.floor(realPos)];
+            data[s]=this.audioBuffer[parseInt(realPos.toFixed(0),10)];
             realPos+=realStep;
         }
 

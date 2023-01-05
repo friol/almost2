@@ -16,8 +16,8 @@ var lastLoop = new Date;
 var thisLoop=undefined;
 var glbScheduleInterval=10;
 
-const appleiiFps=60;
-const appleiiCPUSpeed=1023000;
+const appleiiFps=65;
+const appleiiCPUSpeed=1022720;
 
 //
 
@@ -61,7 +61,8 @@ function preload()
 function emulate()
 {
     var iniCycles=0;
-    while (iniCycles<(appleiiCPUSpeed/appleiiFps))
+    //while (iniCycles<(appleiiCPUSpeed/appleiiFps))
+    while (iniCycles<16384)
     {
         var cycElapsed=glbCPU.executeOneOpcode();
         glbTotCycles+=cycElapsed;
@@ -98,7 +99,7 @@ function emulate()
     }
     else if (fpeez>appleiiFps)
     {
-        // brake pls!
+        // brake!!!
         glbScheduleInterval++;
     }
 
@@ -169,6 +170,12 @@ window.onload = (event) =>
         {
             // pushbutton zero
             glbMMU.pushbutton0();
+            e.preventDefault();
+        }
+		else if ((e.ctrlKey==true)&&(e.key=="b"))
+		{
+            // CTRL-B (RESET)
+            glbMMU.pressKey(2);
             e.preventDefault();
         }
 		else if ((e.ctrlKey==true)&&(e.key=="c"))
