@@ -10,6 +10,13 @@ var glbSpeaker;
 var glbTotCycles=0;
 var glbTapeSprite;
 
+var glbLaunchGUI;
+var glbTimeoutId;
+var glbTypeOfRom="Apple ][+";
+var glbDiskLoading=false;
+var glbTapeLoading=false;
+var glbGlow=0.0;
+
 // fps counter
 var frameTime = 0;
 var lastLoop = new Date;
@@ -28,11 +35,19 @@ function updateDebugger()
     glbCPU.drawDebugInfo(listOfOpcodes,10,30);
 }
 
+function romselCallback(s)
+{
+    glbTypeOfRom=s;
+}
+
 function go()
 {
-    glbMMU=new a2mmu();
-    document.getElementById("partyStarter").disabled = true;
-    document.getElementById("romversionSelect").disabled=true;
+    clearTimeout(glbTimeoutId);
+    glbLaunchGUI.isActive=false;
+
+    glbMMU=new a2mmu(glbTypeOfRom);
+    //document.getElementById("partyStarter").disabled = true;
+    //document.getElementById("romversionSelect").disabled=true;
     setTimeout(preload,100);
 }
 
@@ -58,6 +73,27 @@ function preload()
     }
 }
 
+function drawDiskTapeStatus()
+{
+    var cnvs = document.getElementById("a2display");
+    var ctx = cnvs.getContext("2d");
+
+    if (glbDiskLoading)
+    {
+        var diskImg=document.getElementById("diskIcon");
+        ctx.shadowBlur=10.0*Math.abs(Math.sin(glbGlow));
+        ctx.shadowColor="white";
+        ctx.drawImage(diskImg,525,345);
+
+        ctx.font='9px pixelsquare';
+        ctx.fillStyle = 'white';
+        ctx.textBaseline = 'top';
+        ctx.fillText("trk"+glbDiskii.track.toString().padStart(2, '0'),524,372);        
+    }
+
+    glbGlow+=0.05;
+}
+
 function emulate()
 {
     var iniCycles=0;
@@ -74,13 +110,25 @@ function emulate()
     glbVDC.draw(glbMMU);
     if (glbMMU.cyclesWithoutCassetteRead>100)
     {
-        document.getElementById("tapeImg").style.display="none";
+        //document.getElementById("tapeImg").style.display="none";
+        glbTapeLoading=false;
+    }
+    else
+    {
+        glbTapeLoading=true;
     }
     if (glbMMU.cyclesWithoutDiskRead>1000000)
     {
-        document.getElementById("diskImg").style.display="none";
-        document.getElementById("trackSpan").style.display="none";
+        //document.getElementById("diskImg").style.display="none";
+        //document.getElementById("trackSpan").style.display="none";
+        glbDiskLoading=false;
     }
+    else
+    {
+        glbDiskLoading=true;
+    }
+
+    drawDiskTapeStatus();
 
     // calc fps
     const filterStrength = 20;
@@ -150,6 +198,14 @@ function handleDiskUpload(fls)
         glbDiskii.setDisk(glbDisk.theDisk);
 	};
 	fileReader.readAsArrayBuffer(fls[0]);	
+}
+
+function guiLoop()
+{
+    var canvas = document.getElementById("a2display");
+    glbLaunchGUI.draw(canvas);
+
+    glbTimeoutId=setTimeout(guiLoop,10);
 }
 
 window.onload = (event) => 
@@ -231,10 +287,8 @@ window.onload = (event) =>
         }
     }
 
-    const splashImg=document.getElementById("splashImg");
-    var canvas = document.getElementById("a2display");
-    var ctx = canvas.getContext("2d",{ willReadFrequently: true });
-    ctx.drawImage(splashImg,0,0);
-
     glbDiskii=new disk2();
+
+    glbLaunchGUI=new launchGUI(go,romselCallback);
+    glbTimeoutId=setTimeout(guiLoop,10);
 }

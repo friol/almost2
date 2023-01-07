@@ -84,23 +84,24 @@ class disk2
             if (this.halfTrackPos>0)
             {
                 this.halfTrackPos--;
-                document.getElementById("trackSpan").innerHTML="Track "+Math.floor((this.halfTrackPos+1)/2);
-                document.getElementById("trackSpan").style.display="block";
+                //document.getElementById("trackSpan").innerHTML="Track "+Math.floor((this.halfTrackPos+1)/2);
+                //document.getElementById("trackSpan").style.display="block";
             }
         }
     
         // track is increasing
         if (this.phasesBB[(phase - 1) & 3])
         {
-            if (this.halfTrackPos<69)
+            if (this.halfTrackPos<68)
             {
                 this.halfTrackPos++;
-                document.getElementById("trackSpan").innerHTML="Track "+Math.floor((this.halfTrackPos+1)/2);
-                document.getElementById("trackSpan").style.display="block";
+                //document.getElementById("trackSpan").innerHTML="Track "+Math.floor((this.halfTrackPos+1)/2);
+                //document.getElementById("trackSpan").style.display="block";
             }
         }
     
         this.phases[phase] = true;
+        
         this.track = Math.floor((this.halfTrackPos+1)/2);
     }
 
@@ -127,8 +128,8 @@ class disk2
         }
         else if (addr==0xc0eb)
         {
-            //console.log("DiskII::selecting drive 2");
-            alert("DiskII::warning: software is selecting drive 2");
+            console.log("DiskII::selecting drive 2");
+            //alert("DiskII::warning: software is selecting drive 2");
         }
         else if (addr==0xc0ec)
         {

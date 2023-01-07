@@ -7,6 +7,12 @@ html
     /*background-color: black;*/
 }
 
+canvas 
+{ 
+    image-rendering: pixelated; 
+    user-select: none;
+}
+
 #trackSpan
 {
     padding-top: 10px;
@@ -30,4 +36,12 @@ html
 	animation: zoominoutsinglefeatured 1s infinite ;
     display: none;
     margin-top:10px;
+}
+
+/* gui fonts */
+
+@font-face 
+{
+    font-family: 'pixelsquare';
+    src: url('../gui/fonts/pixelsquare.ttf');
 }

@@ -2,7 +2,7 @@
 
 class a2mmu
 {
-    constructor()
+    constructor(romType)
     {
         this.ram64k=new Array(65536);
         for (var i=0;i<65536;i++)
@@ -31,7 +31,7 @@ class a2mmu
         var thisInstance=this;
         var oReq = new XMLHttpRequest();
 
-        const romVer=document.getElementById("romversionSelect").value;
+        const romVer=(romType=="Apple ][")?"apple2":"apple2p";
         var romName="apple2p.bin";
         if (romVer=="apple2") romName="A2ROM.BIN";
 
@@ -211,7 +211,7 @@ class a2mmu
             if (addr==0xc0ec)
             {
                 this.cyclesWithoutDiskRead=0;
-                document.getElementById("diskImg").style.display="block";
+                //document.getElementById("diskImg").style.display="block";
             }
 
             return this.diskii.diskRead(addr);
