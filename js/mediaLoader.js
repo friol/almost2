@@ -68,6 +68,20 @@ class mediaLoader
 
     mouseUp(mx,my)
     {
+        var x0=this.pposx+this.posx;
+        var y0=this.pposy+this.posy+12;
+        var x1=this.pposx+this.posx+230;
+        var y1=this.pposy+this.posy+28;
+
+        if ((mx>=x0)&&(mx<x1)&&(my>=y0)&&(my<y1))
+        {
+            this.highlighted=true;
+        }
+        else
+        {
+            this.highlighted=false;
+        }
+        
         if (this.highlighted)
         {
             if (this.type==0)

@@ -45,7 +45,7 @@ function go()
     clearTimeout(glbTimeoutId);
     glbLaunchGUI.isActive=false;
 
-    glbMMU=new a2mmu(glbTypeOfRom);
+    glbMMU.loadRoms(glbTypeOfRom);
     //document.getElementById("partyStarter").disabled = true;
     //document.getElementById("romversionSelect").disabled=true;
     setTimeout(preload,100);
@@ -89,6 +89,13 @@ function drawDiskTapeStatus()
         ctx.fillStyle = 'white';
         ctx.textBaseline = 'top';
         ctx.fillText("trk"+glbDiskii.track.toString().padStart(2, '0'),524,372);        
+    }
+    else if (glbTapeLoading)
+    {
+        var tapeImg=document.getElementById("tapeIcon");
+        ctx.shadowBlur=10.0*Math.abs(Math.sin(glbGlow));
+        ctx.shadowColor="white";
+        ctx.drawImage(tapeImg,525,360);
     }
 
     glbGlow+=0.05;
@@ -288,6 +295,7 @@ window.onload = (event) =>
     }
 
     glbDiskii=new disk2();
+    glbMMU=new a2mmu();
 
     glbLaunchGUI=new launchGUI(go,romselCallback);
     glbTimeoutId=setTimeout(guiLoop,10);

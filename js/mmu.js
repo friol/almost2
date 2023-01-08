@@ -2,7 +2,7 @@
 
 class a2mmu
 {
-    constructor(romType)
+    constructor()
     {
         this.ram64k=new Array(65536);
         for (var i=0;i<65536;i++)
@@ -25,9 +25,12 @@ class a2mmu
         this.pb1=0;
         this.pb2=0;
 
-        // load Apple ][ rom
         this.romsLoaded=false;
+    }
 
+    loadRoms(romType)
+    {
+        // load Apple ][ rom
         var thisInstance=this;
         var oReq = new XMLHttpRequest();
 
@@ -186,7 +189,7 @@ class a2mmu
             if (this.cassetteMedia!=undefined)
             {
                 this.cyclesWithoutCassetteRead=0;
-                document.getElementById("tapeImg").style.display="block";
+                //document.getElementById("tapeImg").style.display="block";
                 return this.cassetteMedia.readByte(this.curCycles);
             }
             return 0;
