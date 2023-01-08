@@ -173,7 +173,22 @@ class disk2
 
     diskWrite(addr,value)
     {
-        if (addr==0xc0ed)
+		if ((addr>=0xc0e0)&&(addr<=0xc0e7))
+        {
+            // move drive head
+            this.stepMotor(addr); 
+        }
+        else if (addr==0xc0e8)
+        {
+            //console.log("DiskII::motor off");
+            this.motorOn=false;            
+        }
+        else if (addr==0xc0e9)
+        {
+            //console.log("DiskII::motor on");
+            this.motorOn=true;            
+        }
+        else if (addr==0xc0ed)
         {
             this.driveLatch=value;
         }

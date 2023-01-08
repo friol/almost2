@@ -104,8 +104,7 @@ function drawDiskTapeStatus()
 function emulate()
 {
     var iniCycles=0;
-    //while (iniCycles<(appleiiCPUSpeed/appleiiFps))
-    while (iniCycles<16384)
+    while (iniCycles<(appleiiCPUSpeed/appleiiFps))
     {
         var cycElapsed=glbCPU.executeOneOpcode();
         glbTotCycles+=cycElapsed;

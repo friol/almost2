@@ -4,12 +4,32 @@ class a2mmu
 {
     constructor()
     {
-        this.ram64k=new Array(65536);
-        for (var i=0;i<65536;i++)
+        this.ram48k=new Array(0xc000);
+        for (var i=0;i<0xc000;i++)
         {
             // not the correct init pattern, but it gives a blank screen at the beginning
-            this.ram64k[i]=32|0x80;
+            this.ram48k[i]=32|0x80;
         }
+
+        // language/expansion ram card 16k
+        this.lgcRam=new Array(0x3000);
+        for (var i=0;i<0x3000;i++)
+        {
+            this.lgcRam[i]=0x0;
+        }
+
+        this.lgcRamBk2=new Array(0x1000);
+        for (var i=0;i<0x1000;i++)
+        {
+            this.lgcRamBk2[i]=0x0;
+        }
+
+        // Language Card 16k ram expansion
+        this.lcardReadable  = false; // Language Card readable
+        this.lcardBank2Enable = true; // Language Card bank 2 enabled
+        this.writeState=2; // 0 disabled, 1 half enabled, 2 enabled
+
+        //
 
         this.a2rom=new Array();
         this.cassetteMedia=undefined;
@@ -92,6 +112,67 @@ class a2mmu
         this.pb0=0xff;
     }
 
+    lgcSwitches(addr,writeFlag)
+    {
+        if (((addr >> 3) & 1) == 0) this.lcardBank2Enable = true; 
+        else this.lcardBank2Enable = false; 
+
+        if ((addr==0xC080)||(addr==0xC084))
+        {
+            this.lcardReadable = true; 
+            this.writeState=0;
+        }
+        else if ((addr==0xC081)||(addr==0xC085))
+        {
+            this.lcardReadable = false; 
+        }
+        else if ((addr==0xC082)||(addr==0xC086))
+        {
+            this.lcardReadable = false; 
+            this.writeState=0;
+        }
+        else if ((addr==0xC083)||(addr==0xC087))
+        {
+            this.lcardReadable = true; 
+        }
+        else if ((addr==0xC088)||(addr==0xC08C))
+        {
+            this.lcardReadable = true;
+            this.writeState=0;
+        }
+        else if ((addr==0xC089)||(addr==0xC08D))
+        {
+            this.lcardReadable = false;
+        }
+        else if ((addr==0xC08A)||(addr==0xC08E))
+        {
+            this.lcardReadable = false;
+            this.writeState=0;
+        }
+        else if ((addr==0xC08B)||(addr==0xC08F))
+        {
+            this.lcardReadable = true;
+        }
+
+        if (addr&0x01)
+        {
+            if (!writeFlag)
+            {
+                this.writeState++;
+            }
+        }
+
+        if ((writeFlag)&&(this.writeState==1))
+        {
+            this.writeState=0;
+        }
+
+        if (this.writeState>2)
+        {
+            this.writeState=2;
+        }
+    }
+
     readAddr(addr)
     {
         /*if (
@@ -110,7 +191,7 @@ class a2mmu
         if ((addr>=0)&&(addr<=0xbfff))
         {
             // RAM
-            return this.ram64k[addr];
+            return this.ram48k[addr];
         }
         else if (addr==0xc000)
         {
@@ -207,6 +288,12 @@ class a2mmu
                 return 0;
             }
         }
+        else if ((addr>=0xc080)&&(addr<=0xc08f))
+        {
+            // language card/16k card switches
+            this.lgcSwitches(addr,false);
+            return 0;
+        }
         else if ((addr>=0xc0e0)&&(addr<=0xc0ef))
         {
             // disk drive read (slot 6)
@@ -226,7 +313,16 @@ class a2mmu
         }
         else if ((addr>=0xd000)&&(addr<=0xffff))
         {
-            return this.a2rom[addr-0xd000];
+            if (!this.lcardReadable)
+            {
+                return this.a2rom[addr-0xd000];
+            }
+            if (this.lcardBank2Enable && (addr < 0xE000))
+            {
+                return this.lgcRamBk2[addr - 0xd000];
+            }
+    
+            return this.lgcRam[addr-0xd000];
         }
         else
         {
@@ -272,7 +368,7 @@ class a2mmu
         if ((addr>=0)&&(addr<=0xbfff))
         {
             // RAM
-            this.ram64k[addr]=value;
+            this.ram48k[addr]=value;
         }
         else if (addr==0xc010)
         {
@@ -309,6 +405,11 @@ class a2mmu
             // set page1
             this.vdc.setPage(0);
         }
+        else if (addr==0xc055)
+        {
+            // set page2
+            this.vdc.setPage(1);
+        }
         else if (addr==0xc056)
         {
             // set lores graphics
@@ -319,11 +420,26 @@ class a2mmu
             // set hires graphics
             this.vdc.setHires(true);
         }
+        else if ((addr>=0xc080)&&(addr<=0xc08f))
+        {
+            // language card/16k card switches
+            this.lgcSwitches(addr,true);
+        }
         else if ((addr>=0xc0e0)&&(addr<=0xc0ef))
         {
             // disk drive write (slot 6)
             this.diskii.diskWrite(addr,value);
         }
+        else if ((this.writeState==2) && (addr >= 0xd000)) 
+        {
+            if (this.lcardBank2Enable && (addr < 0xE000)) 
+            {
+                this.lgcRamBk2[addr-0xd000]=value;
+                return;
+            }
+
+            this.lgcRam[addr-0xd000]=value;
+        }        
         else
         {
             console.log("%cUnmapped write to ["+addr.toString(16)+"]",'color: #E3823D');
