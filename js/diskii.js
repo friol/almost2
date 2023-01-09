@@ -188,6 +188,10 @@ class disk2
             //console.log("DiskII::motor on");
             this.motorOn=true;            
         }
+        else if (addr==0xc0ea)
+        {
+            //console.log("DiskII::selecting drive 1");
+        }
         else if (addr==0xc0ed)
         {
             this.driveLatch=value;

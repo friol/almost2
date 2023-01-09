@@ -174,6 +174,8 @@ function handleFileUpload(fls)
 			return;
 		}
 
+        console.log("Loading tape ["+fname+"]");
+
 		arrayBuffer = event.target.result;
 
         glbCassette=new cassette();
@@ -196,6 +198,8 @@ function handleDiskUpload(fls)
 			alert("You can only load .nib files");
 			return;
 		}
+
+        console.log("Loading disk ["+fname+"]");
 
 		arrayBuffer = event.target.result;
 
