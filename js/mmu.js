@@ -25,6 +25,7 @@ class a2mmu
         }
 
         // Language Card 16k ram expansion
+        this.lgcEnabled=true;
         this.lcardReadable  = false; // Language Card readable
         this.lcardBank2Enable = true; // Language Card bank 2 enabled
         this.writeState=2; // 0 disabled, 1 half enabled, 2 enabled
@@ -46,6 +47,11 @@ class a2mmu
         this.pb2=0;
 
         this.romsLoaded=false;
+    }
+
+    setLgc(onoff)
+    {
+        this.lgcEnabled=onoff;
     }
 
     loadRoms(romType)

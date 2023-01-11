@@ -13,6 +13,8 @@ var glbTapeSprite;
 var glbLaunchGUI;
 var glbTimeoutId;
 var glbTypeOfRom="Apple ][+";
+var glbSoundOn=true;
+var glb16kExp=true;
 var glbDiskLoading=false;
 var glbTapeLoading=false;
 var glbGlow=0.0;
@@ -23,7 +25,7 @@ var lastLoop = new Date;
 var thisLoop=undefined;
 var glbScheduleInterval=10;
 
-const appleiiFps=65;
+const appleiiFps=60;
 const appleiiCPUSpeed=1022720;
 
 //
@@ -40,12 +42,23 @@ function romselCallback(s)
     glbTypeOfRom=s;
 }
 
+function soundOnOffCallback(s)
+{
+    glbSoundOn=s;
+}
+
+function exp16Callback(s)
+{
+    glb16kExp=s;
+}
+
 function go()
 {
     clearTimeout(glbTimeoutId);
     glbLaunchGUI.isActive=false;
 
     glbMMU.loadRoms(glbTypeOfRom);
+    glbMMU.setLgc(glb16kExp);
     //document.getElementById("partyStarter").disabled = true;
     //document.getElementById("romversionSelect").disabled=true;
     setTimeout(preload,100);
@@ -61,7 +74,7 @@ function preload()
         glbCPU.powerUp();   
         glbVDC=new apple2vdc();
         glbMMU.setVDC(glbVDC);
-        glbSpeaker=new soundBeeper(appleiiCPUSpeed,appleiiFps);
+        glbSpeaker=new soundBeeper(appleiiCPUSpeed,appleiiFps,glbSoundOn);
         glbMMU.setSpeaker(glbSpeaker);
         glbMMU.setDiskII(glbDiskii);
         setTimeout(emulate,10);
@@ -104,7 +117,8 @@ function drawDiskTapeStatus()
 function emulate()
 {
     var iniCycles=0;
-    while (iniCycles<(appleiiCPUSpeed/appleiiFps))
+    //while (iniCycles<(appleiiCPUSpeed/appleiiFps))
+    while (iniCycles<glbSpeaker.bufferLen)
     {
         var cycElapsed=glbCPU.executeOneOpcode();
         glbTotCycles+=cycElapsed;
@@ -157,7 +171,8 @@ function emulate()
         glbScheduleInterval++;
     }
 
-    setTimeout(emulate,glbScheduleInterval);
+    //setTimeout(emulate,glbScheduleInterval);
+    setTimeout(emulate,12);
 }
 
 function handleFileUpload(fls)
@@ -300,6 +315,6 @@ window.onload = (event) =>
     glbDiskii=new disk2();
     glbMMU=new a2mmu();
 
-    glbLaunchGUI=new launchGUI(go,romselCallback);
+    glbLaunchGUI=new launchGUI(go,romselCallback,soundOnOffCallback,exp16Callback);
     glbTimeoutId=setTimeout(guiLoop,10);
 }

@@ -2,7 +2,7 @@
 
 class guiWindow
 {
-    constructor(px,py,wx,hy,wtitle,runFunc,romselCallback)
+    constructor(px,py,wx,hy,wtitle,runFunc,romselCallback,sndCback,expCbak)
     {
         this.posx=px;
         this.posy=py;
@@ -23,8 +23,12 @@ class guiWindow
         this.listOfElements.push(mediaDisk);
         var mediaTape=new mediaLoader(12,75,this.posx,this.posy,1);
         this.listOfElements.push(mediaTape);
-        var romSelector=new guiRadio(12,140,this.posx,this.posy,["Apple ][+","Apple ]["],romselCallback);
+        var romSelector=new guiRadio(12,146,this.posx,this.posy,["Apple ][+","Apple ]["],romselCallback);
         this.listOfElements.push(romSelector);
+        var soundCheckbox=new guiCheckbox(12,112,this.posx,this.posy,true,"Sound",sndCback);
+        this.listOfElements.push(soundCheckbox);
+        var expCheckbox=new guiCheckbox(120,112,this.posx,this.posy,true,"16kexp",expCbak);
+        this.listOfElements.push(expCheckbox);
     }
 
     draw(ctx)

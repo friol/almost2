@@ -219,7 +219,7 @@ class apple2vdc
         // and NORMAL mode in the range $80 to $FF. Normal mode characters are repeated in the $80 to $FF range.
         // https://retrocomputing.stackexchange.com/questions/2534/what-are-the-screen-holes-in-apple-ii-graphics
     
-        var baseAddr=0x400;
+        var baseAddr=0x400+(this.page*0x400);
         for (var row=0;row<24/3;row++)
         {
             var realRow=row;
