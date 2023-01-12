@@ -46,7 +46,104 @@ class a2mmu
         this.pb1=0;
         this.pb2=0;
 
+        this.gcPos = [ 127.0, 127.0 ];
+        this.gcCountdown = [ 0.0,0.0 ];
+        this.gcDirection = [0,0];
+        this.gcActive = [0,0];
+        this.GCActionSpeed = 8;
+        this.GCReleaseSpeed = 2;
+        this.gcResetCycle=0;
+
         this.romsLoaded=false;
+    }
+
+    resetPaddles()
+    {
+        this.gcCountdown[0] = this.gcPos[0] * this.gcPos[0];
+        this.gcCountdown[1] = this.gcPos[1] * this.gcPos[1];
+        this.gcResetCycle = this.curCycles;        
+    }
+
+    readPaddle(pdlNum) 
+    {
+        const GCFreq = 5.6;
+    
+        this.gcCountdown[pdlNum]-=(this.curCycles - this.gcResetCycle) / GCFreq;
+        if (this.gcCountdown[pdlNum] <= 0)
+        {
+            this.gcCountdown[pdlNum] = 0;
+            return 0;
+        }
+
+        return 0x80;
+    }    
+
+    joyLeft()
+    {
+        this.gcDirection[0] = -1; 
+        this.gcActive[0] = 1;
+    }
+
+    joyRight()
+    {
+        this.gcDirection[0] = 1; 
+        this.gcActive[0] = 1;
+    }
+
+    joyLeftRelease()
+    {
+        this.gcDirection[0] = -1; 
+        this.gcActive[0] = 0;
+    }
+
+    joyRightRelease()
+    {
+        this.gcDirection[0] = 1; 
+        this.gcActive[0] = 0;
+    }
+
+
+    joyUp()
+    {
+        this.gcDirection[1] = -1; 
+        this.gcActive[1] = 1;
+    }
+
+    joyDown()
+    {
+        this.gcDirection[1] = 1; 
+        this.gcActive[1] = 1;
+    }
+
+    joyUpRelease()
+    {
+        this.gcDirection[1] = -1; 
+        this.gcActive[1] = 0;
+    }
+
+    joyDownRelease()
+    {
+        this.gcDirection[1] = 1; 
+        this.gcActive[1] = 0;
+    }
+
+    update()
+    {
+        for (var pdl = 0; pdl < 2; pdl++) 
+        {
+			if (this.gcActive[pdl]) 
+            {                                         
+				this.gcPos[pdl] += this.gcDirection[pdl] * this.GCActionSpeed;
+				if (this.gcPos[pdl] > 255) this.gcPos[pdl] = 255;
+				if (this.gcPos[pdl] < 0)   this.gcPos[pdl] = 0;
+			} 
+            else 
+            {
+				this.gcPos[pdl] += this.gcDirection[pdl] * this.GCReleaseSpeed;
+				if ((this.gcDirection[pdl] == 1)  && (this.gcPos[pdl] > 127)) this.gcPos[pdl] = 127;
+				if ((this.gcDirection[pdl] == -1) && (this.gcPos[pdl] < 127)) this.gcPos[pdl] = 127;
+			}
+		}        
     }
 
     setLgc(onoff)
@@ -294,8 +391,23 @@ class a2mmu
                 return 0;
             }
         }
+        else if (addr==0xc064)
+        {
+            return this.readPaddle(0);
+        }
+        else if (addr==0xc065)
+        {
+            return this.readPaddle(1);
+        }
+        else if (addr==0xc070)
+        {
+            this.resetPaddles();
+            return 0;
+        }
         else if ((addr>=0xc080)&&(addr<=0xc08f))
         {
+            if (!this.lgcEnabled) return 0;
+
             // language card/16k card switches
             this.lgcSwitches(addr,false);
             return 0;
@@ -316,6 +428,10 @@ class a2mmu
         {
             // we assume disk drive interface is in slot 6
             return this.diskii.diskiirom[addr-0xc600];
+        }
+        else if ((!this.lgcEnabled)&&(addr>=0xd000))
+        {
+            return this.a2rom[addr-0xd000];
         }
         else if ((addr>=0xd000)&&(addr<=0xffff))
         {
@@ -426,8 +542,14 @@ class a2mmu
             // set hires graphics
             this.vdc.setHires(true);
         }
+        else if (addr==0xc070)
+        {
+            this.resetPaddles();
+        }
         else if ((addr>=0xc080)&&(addr<=0xc08f))
         {
+            if (!this.lgcEnabled) return;
+
             // language card/16k card switches
             this.lgcSwitches(addr,true);
         }

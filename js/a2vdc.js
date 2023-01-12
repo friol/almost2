@@ -447,31 +447,31 @@ class apple2vdc
 
     setTextMode()
     {
-        console.log("setting text mode");
+        //console.log("setting text mode");
         this.mode=0;
     }
 
     setMixedGraphics(v)
     {
-        console.log("setting mixed mode to "+v);
+        //console.log("setting mixed mode to "+v);
         this.mixedGraph=v;        
     }
 
     setGraphicsMode()
     {
-        console.log("setting gfx mode");
+        //console.log("setting gfx mode");
         this.mode=1;
     }
 
     setHires(h)
     {
-        console.log("setting hires mode to "+h);
+        //console.log("setting hires mode to "+h);
         this.hires=h;
     }
 
     setPage(p)
     {
-        console.log("setting page to "+(p+1));
+        //console.log("setting page to "+(p+1));
         this.page=p;
     }
 

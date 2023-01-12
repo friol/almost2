@@ -26,14 +26,8 @@ class soundBeeper
 
             this.callFreq=this.context.sampleRate/this.audioBufSize;
             this.bufferLen=Math.floor(cpuspeed/this.callFreq);
-            this.bufferPos=0;
-    
-            /*this.audioBuffer=new Array(this.bufferLen*64);
-            for (var s=0;s<this.bufferLen*64;s++)
-            {
-                this.audioBuffer[s]=0.0;
-            }*/
             this.audioQueue=[];
+            this.audioqpos=0;
 
             this.audioInitialized=true;
         }
@@ -49,12 +43,6 @@ class soundBeeper
         for (var s=0;s<numCycles;s++)
         {
             this.audioQueue.push(this.speakerState);
-            //this.audioBuffer[this.bufferPos]=this.speakerState;
-            //this.bufferPos+=1;
-            /*if (this.bufferPos>=this.bufferLen)
-            {
-                alert("azz");
-            }*/
         }        
     }
 
@@ -68,31 +56,41 @@ class soundBeeper
     {
         if (!this.audioEnabled) 
         {
-            this.bufferPos=0;
+            this.audioQueue=[];
             return;
         }
 
         if (!this.audioInitialized) return;
 
-        if (this.audioQueue.length<this.bufferLen) return;
-
         var data = e.outputBuffer.getChannelData(0);
+
+        if ((this.audioQueue.length-this.audioqpos)<this.bufferLen) 
+        {
+            //console.log("Skipping mix because audio queue is not full yet");
+            /*for (var s=0;s<data.length;s++)
+            {
+                data[s]=0;
+            }*/
+            return;
+        }
 
         // resample
 
         var realPos=0;
         var realStep;
         realStep=this.bufferLen/data.length;
-        //console.log(this.bufferPos-this.bufferLen);
 
+        //console.log("Audio queue size "+this.audioQueue.length);
         for (var s=0;s<data.length;s++)
         {
-            //data[s]=this.audioBuffer[parseInt(realPos.toFixed(0),10)];
-            data[s]=this.audioQueue[parseInt(realPos.toFixed(0),10)];
+            data[s]=this.audioQueue[this.audioqpos+parseInt(realPos.toFixed(0),10)];
             realPos+=realStep;
         }
+        this.audioqpos+=parseInt(realPos.toFixed(0),10);
 
-        this.audioQueue=[];
-        this.bufferPos=0;
+        this.audioQueue=this.audioQueue.slice(this.audioqpos);
+        this.audioqpos=0;
+
+        //console.log(this.audioQueue.length);
     }
 }

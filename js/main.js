@@ -1,4 +1,14 @@
-/* almost ][ - 2k22-2k23 */
+
+/* 
+    almost ][ - 2k22-2k23 
+
+    TODO:
+    - joystick handling code
+    - alternative hi-res rendering method + gui switch
+    - audio migrated to AudioWorklet
+    - solve the infinite memory usage in audio processor
+        
+*/
 
 var glbMMU;
 var glbCPU;
@@ -23,7 +33,7 @@ var glbGlow=0.0;
 var frameTime = 0;
 var lastLoop = new Date;
 var thisLoop=undefined;
-var glbScheduleInterval=10;
+var glbScheduleInterval=16;
 
 const appleiiFps=60;
 const appleiiCPUSpeed=1022720;
@@ -117,7 +127,6 @@ function drawDiskTapeStatus()
 function emulate()
 {
     var iniCycles=0;
-    //while (iniCycles<(appleiiCPUSpeed/appleiiFps))
     while (iniCycles<glbSpeaker.bufferLen)
     {
         var cycElapsed=glbCPU.executeOneOpcode();
@@ -126,8 +135,10 @@ function emulate()
         glbSpeaker.feed(cycElapsed);
         glbMMU.setCycles(glbTotCycles);
     }
-    //updateDebugger();
+
     glbVDC.draw(glbMMU);
+    glbMMU.update();
+
     if (glbMMU.cyclesWithoutCassetteRead>100)
     {
         //document.getElementById("tapeImg").style.display="none";
@@ -137,6 +148,7 @@ function emulate()
     {
         glbTapeLoading=true;
     }
+
     if (glbMMU.cyclesWithoutDiskRead>1000000)
     {
         //document.getElementById("diskImg").style.display="none";
@@ -160,19 +172,19 @@ function emulate()
     var fpeez=(1000/frameTime).toFixed(1);
     fpsOut.innerHTML = "going at " + fpeez + " fps";
 
-    if (fpeez<appleiiFps)
+    if (fpeez<46)
     {
         // accelerate!
         if (glbScheduleInterval>1) glbScheduleInterval--;
     }
-    else if (fpeez>appleiiFps)
+    else if (fpeez>46)
     {
         // brake!!!
         glbScheduleInterval++;
     }
 
-    //setTimeout(emulate,glbScheduleInterval);
-    setTimeout(emulate,12);
+    setTimeout(emulate,glbScheduleInterval);
+    //setTimeout(emulate,16);
 }
 
 function handleFileUpload(fls)
@@ -253,6 +265,26 @@ window.onload = (event) =>
             glbMMU.pushbutton0();
             e.preventDefault();
         }
+        else if (e.key=="End")
+        {
+            glbMMU.joyLeft();
+            e.preventDefault();
+        }
+        else if (e.key=="PageDown")
+        {
+            glbMMU.joyRight();
+            e.preventDefault();
+        }
+        else if (e.key=="Home")
+        {
+            glbMMU.joyUp();
+            e.preventDefault();
+        }
+        else if (e.key=="PageUp")
+        {
+            glbMMU.joyDown();
+            e.preventDefault();
+        }
 		else if ((e.ctrlKey==true)&&(e.key=="b"))
 		{
             // CTRL-B (RESET)
@@ -308,6 +340,30 @@ window.onload = (event) =>
         else if (e.key=="Escape")
         {
             glbMMU.pressKey(27);
+            e.preventDefault();
+        }
+    }
+
+    document.onkeyup = function(e)
+	{
+		if (e.key=="End")
+		{
+            glbMMU.joyLeftRelease();
+            e.preventDefault();
+        }
+        else if (e.key=="PageDown")
+        {
+            glbMMU.joyRightRelease();
+            e.preventDefault();
+        }
+        else if (e.key=="Home")
+        {
+            glbMMU.joyUpRelease();
+            e.preventDefault();
+        }
+        else if (e.key=="PageUp")
+        {
+            glbMMU.joyDownRelease();
             e.preventDefault();
         }
     }
