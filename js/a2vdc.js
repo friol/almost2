@@ -2,7 +2,7 @@
 
 class apple2vdc
 {
-    constructor()
+    constructor(highResAlgoNum)
     {
         // apple ][ textmode font
         this.a2font=[
@@ -114,7 +114,16 @@ class apple2vdc
         }        
 
         var canvas = document.getElementById("a2display");
-        this.ctx = canvas.getContext("2d");
+        this.ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+        if (highResAlgoNum)
+        {
+            this.highResAlgo=1; // 1 ideal, 2 real
+        }
+        else
+        {
+            this.highResAlgo=2;
+        }
     }
 
     drawTextmodeChar(col,row,chnum,ctx)
@@ -289,6 +298,109 @@ class apple2vdc
     // great doc on how the high resolution works here: https://www.xtof.info/hires-graphics-apple-ii.html
     // also, this answer here explains things even more in depth https://retrocomputing.stackexchange.com/questions/6271/what-determines-the-color-of-every-8th-pixel-on-the-apple-ii
 
+    drawHiresLine(y,dblSizeX,theMMU,addrArray,pageAdder,addrAdder,hgrColors,acounter)
+    {
+        var x=0;
+        const joffset = y * dblSizeX;
+        let imaxLine = (y + 1) * dblSizeX - 1;
+        let isEven = 1;
+        let skip = false;
+        let previousWhite = false;
+        
+        for (var b=0;b<40;b++)
+        {
+            const byte1=theMMU.readAddr(addrArray[acounter]+pageAdder+addrAdder+b);
+            const byte2bit0 = (b < 39) ? (theMMU.readAddr(addrArray[acounter]+pageAdder+addrAdder+b+1) & 1) : 0;
+
+            const ioffset = joffset + b * 14;
+            const highBit = (byte1 & 128) ? 1 : 0
+
+            for (let b = 0; b <= 6; b++) 
+            {
+              if (skip) 
+              {
+                skip = false;
+                continue;
+              }
+
+              const bit1 = byte1 & (1 << b);
+              const bit2 = (b < 6) ? (byte1 & (1 << (b + 1))) : byte2bit0;
+
+              if (bit1) 
+              {
+                let istart = ioffset + 2 * b + highBit
+                let imax = istart + 3;
+
+                let color1 = previousWhite ? 3 : 1 + 4 * highBit + isEven;
+                let color = color1;
+                if (bit2) 
+                {
+                  color = 3;
+                  imax += 2;
+                  previousWhite = true;
+                } 
+                else 
+                {
+                  previousWhite = false;
+                }
+                if (imax > imaxLine) imax = imaxLine;
+
+                hgrColors[istart] = color1;
+
+                for (let ix = istart + 1; ix <= imax; ix++) 
+                {
+                  hgrColors[ix] = color;
+                }
+
+                skip = true;
+              } 
+              else 
+              {
+                previousWhite = false;
+                isEven = 1 - isEven;
+              }
+            }
+        }
+    }
+
+    drawHiresLineAlgo2(y,theMMU,addrArray,acounter,pageAdder,addrAdder,fb2,hgrRGBcolors)
+    {
+        var last_bit = 0;
+                
+        for (var b=0;b<40;b++)
+        {
+            const seg=theMMU.readAddr(addrArray[acounter]+pageAdder+addrAdder+b);
+            const next_byte = (b < 39) ? (theMMU.readAddr(addrArray[acounter]+pageAdder+addrAdder+b+1) ) : 0;
+
+            var colorset = seg & 0x80 ? 4 : 0;
+            var color=0;
+            var x2=b*7;
+            for (var bee=0; bee<7; bee++) 
+            {
+                if (!(seg & (1<<bee)))
+                {
+                    color = 0;
+                }
+                else if (last_bit || (bee < 6 ? (seg & (1<<(bee+1))) : next_byte & 1))
+                {
+                    color = 3;
+                }
+                else
+                {
+                    color = 1 + (!(x2&1)); // Even or odd x coords specify color
+                }
+
+                fb2[((y*280) + x2)*4+0] = hgrRGBcolors[color + colorset][0];
+                fb2[((y*280) + x2)*4+1] = hgrRGBcolors[color + colorset][1];
+                fb2[((y*280) + x2)*4+2] = hgrRGBcolors[color + colorset][2];
+                fb2[((y*280) + x2)*4+3] = 255;
+
+                last_bit = seg & (1<<bee);
+                x2+=1;
+            }                    
+        }        
+    }
+
     drawHiresScreen(theMMU,ctx)
     {
         const dblSizeX=560;
@@ -305,84 +417,6 @@ class apple2vdc
         // hires decoding algorithm readapted from https://github.com/chris-torrence/apple2ts/blob/f51dac657d65a7198c7b78e0f34c3983bed41aab/src/canvas.tsx
         const hgrColors = new Uint8Array(dblSizeX * dblSizeY).fill(0);
 
-        var acounter=0;
-        var y=0;
-        for (var r=0;r<this.glbResolutionY/8;r++)
-        {
-            var addrAdder=0;
-            for (var rb=0;rb<8;rb++)
-            {
-                var x=0;
-                const joffset = y * dblSizeX;
-                let imaxLine = (y + 1) * dblSizeX - 1;
-                let isEven = 1;
-                let skip = false;
-                let previousWhite = false;
-                
-                for (var b=0;b<40;b++)
-                {
-                    const byte1=theMMU.readAddr(addrArray[acounter]+pageAdder+addrAdder+b);
-                    const byte2bit0 = (b < 39) ? (theMMU.readAddr(addrArray[acounter]+pageAdder+addrAdder+b+1) & 1) : 0;
-
-                    const ioffset = joffset + b * 14;
-                    const highBit = (byte1 & 128) ? 1 : 0
-
-                    for (let b = 0; b <= 6; b++) 
-                    {
-                      if (skip) 
-                      {
-                        skip = false;
-                        continue;
-                      }
-
-                      const bit1 = byte1 & (1 << b);
-                      const bit2 = (b < 6) ? (byte1 & (1 << (b + 1))) : byte2bit0;
-
-                      if (bit1) 
-                      {
-                        let istart = ioffset + 2 * b + highBit
-                        let imax = istart + 3;
-
-                        let color1 = previousWhite ? 3 : 1 + 4 * highBit + isEven;
-                        let color = color1;
-                        if (bit2) 
-                        {
-                          color = 3;
-                          imax += 2;
-                          previousWhite = true;
-                        } 
-                        else 
-                        {
-                          previousWhite = false;
-                        }
-                        if (imax > imaxLine) imax = imaxLine;
-
-                        hgrColors[istart] = color1;
-
-                        for (let ix = istart + 1; ix <= imax; ix++) 
-                        {
-                          hgrColors[ix] = color;
-                        }
-
-                        skip = true;
-                      } 
-                      else 
-                      {
-                        previousWhite = false;
-                        isEven = 1 - isEven;
-                      }
-                    }
-                }
-
-                addrAdder+=0x400;
-                y+=1;
-            }
-            
-            acounter+=1;
-        }        
-
-        // blit
-
         const hgrRGBcolors=[
             [0,0,0],
             [67,195,0],
@@ -394,40 +428,89 @@ class apple2vdc
             [255,255,255]
         ];
 
-        var fb2=new Uint8ClampedArray(dblSizeX*dblSizeY*4);
-        var hpos=0;
-        var fbpos=0;
+        var fb2;
 
-        for (var py=0;py<dblSizeY;py+=2)
+        if (this.highResAlgo==1)
         {
-            for (var px=0;px<dblSizeX;px++)
+            fb2=new Uint8ClampedArray(dblSizeX*dblSizeY*4);
+        }
+        else
+        {
+            fb2=new Uint8ClampedArray(280*192*4);
+        }
+
+        var acounter=0;
+        var y=0;
+        for (var r=0;r<this.glbResolutionY/8;r++)
+        {
+            var addrAdder=0;
+            for (var rb=0;rb<8;rb++)
             {
-                fb2[fbpos+0]=hgrRGBcolors[hgrColors[hpos]][0];
-                fb2[fbpos+1]=hgrRGBcolors[hgrColors[hpos]][1];
-                fb2[fbpos+2]=hgrRGBcolors[hgrColors[hpos]][2];
-                fb2[fbpos+3]=255;
-                fb2[fbpos+0+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][0];
-                fb2[fbpos+1+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][1];
-                fb2[fbpos+2+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][2];
-                fb2[fbpos+3+(dblSizeX*4)]=255;
-                hpos+=1;
-                fbpos+=4;
+                if (this.highResAlgo==1) this.drawHiresLine(y,dblSizeX,theMMU,addrArray,pageAdder,addrAdder,hgrColors,acounter);
+                else this.drawHiresLineAlgo2(y,theMMU,addrArray,acounter,pageAdder,addrAdder,fb2,hgrRGBcolors);
+
+                addrAdder+=0x400;
+                y+=1;
             }
+            
+            acounter+=1;
+        }        
 
-            fbpos+=dblSizeX*4;
-        }
+        // blit
 
-        if (this.glbImgData2==undefined) this.glbImgData2 = ctx.getImageData(0, 0, dblSizeX, dblSizeY);
-        this.glbImgData2.data.set(fb2);
-    
-        if (this.glbCanvasRenderer2==undefined)
+        if (this.highResAlgo==1)
         {
-            this.glbCanvasRenderer2 = document.createElement('canvas');
-            this.glbCanvasRenderer2.width = this.glbImgData2.width;
-            this.glbCanvasRenderer2.height = this.glbImgData2.height;
+            var hpos=0;
+            var fbpos=0;
+
+            for (var py=0;py<dblSizeY;py+=2)
+            {
+                for (var px=0;px<dblSizeX;px++)
+                {
+                    fb2[fbpos+0]=hgrRGBcolors[hgrColors[hpos]][0];
+                    fb2[fbpos+1]=hgrRGBcolors[hgrColors[hpos]][1];
+                    fb2[fbpos+2]=hgrRGBcolors[hgrColors[hpos]][2];
+                    fb2[fbpos+3]=255;
+                    fb2[fbpos+0+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][0];
+                    fb2[fbpos+1+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][1];
+                    fb2[fbpos+2+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][2];
+                    fb2[fbpos+3+(dblSizeX*4)]=255;
+                    hpos+=1;
+                    fbpos+=4;
+                }
+
+                fbpos+=dblSizeX*4;
+            }
         }
-        this.glbCanvasRenderer2.getContext('2d').putImageData(this.glbImgData2, 0, 0);
-        ctx.drawImage(this.glbCanvasRenderer2,0,0,dblSizeX,dblSizeY);
+
+        if (this.highResAlgo==1)
+        {
+            if (this.glbImgData2==undefined) this.glbImgData2 = ctx.getImageData(0, 0, dblSizeX, dblSizeY);
+            this.glbImgData2.data.set(fb2);
+        
+            if (this.glbCanvasRenderer2==undefined)
+            {
+                this.glbCanvasRenderer2 = document.createElement('canvas');
+                this.glbCanvasRenderer2.width = this.glbImgData2.width;
+                this.glbCanvasRenderer2.height = this.glbImgData2.height;
+            }
+            this.glbCanvasRenderer2.getContext('2d', { willReadFrequently: true }).putImageData(this.glbImgData2, 0, 0);
+            ctx.drawImage(this.glbCanvasRenderer2,0,0,dblSizeX,dblSizeY);
+        }
+        else
+        {
+            if (this.glbImgData2==undefined) this.glbImgData2 = ctx.getImageData(0, 0, 280, 192);
+            this.glbImgData2.data.set(fb2);
+        
+            if (this.glbCanvasRenderer2==undefined)
+            {
+                this.glbCanvasRenderer2 = document.createElement('canvas');
+                this.glbCanvasRenderer2.width = this.glbImgData2.width;
+                this.glbCanvasRenderer2.height = this.glbImgData2.height;
+            }
+            this.glbCanvasRenderer2.getContext('2d', { willReadFrequently: true }).putImageData(this.glbImgData2, 0, 0);
+            ctx.drawImage(this.glbCanvasRenderer2,0,0,560,384);
+        }
     }
 
     hyperBlit(ctx,fbsrc,resx,resy)
@@ -441,7 +524,7 @@ class apple2vdc
             this.glbCanvasRenderer.width = this.glbImgData.width;
             this.glbCanvasRenderer.height = this.glbImgData.height;
         }
-        this.glbCanvasRenderer.getContext('2d').putImageData(this.glbImgData, 0, 0);
+        this.glbCanvasRenderer.getContext('2d', { willReadFrequently: true }).putImageData(this.glbImgData, 0, 0);
         ctx.drawImage(this.glbCanvasRenderer,0,0,560,384);
     }
 

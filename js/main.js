@@ -4,9 +4,12 @@
 
     TODO:
     - joystick handling code
-    - alternative hi-res rendering method + gui switch
     - audio migrated to AudioWorklet
+
+    DONE:
+
     - solve the infinite memory usage in audio processor
+    - alternative hi-res rendering method + gui switch
         
 */
 
@@ -25,6 +28,7 @@ var glbTimeoutId;
 var glbTypeOfRom="Apple ][+";
 var glbSoundOn=true;
 var glb16kExp=true;
+var glbDrawAlgo=true;
 var glbDiskLoading=false;
 var glbTapeLoading=false;
 var glbGlow=0.0;
@@ -62,6 +66,11 @@ function exp16Callback(s)
     glb16kExp=s;
 }
 
+function drawAlgoCallback(s)
+{
+    glbDrawAlgo=s;
+}
+
 function go()
 {
     clearTimeout(glbTimeoutId);
@@ -82,7 +91,7 @@ function preload()
     {
         glbCPU=new cpu6502(glbMMU);
         glbCPU.powerUp();   
-        glbVDC=new apple2vdc();
+        glbVDC=new apple2vdc(glbDrawAlgo);
         glbMMU.setVDC(glbVDC);
         glbSpeaker=new soundBeeper(appleiiCPUSpeed,appleiiFps,glbSoundOn);
         glbMMU.setSpeaker(glbSpeaker);
@@ -99,7 +108,7 @@ function preload()
 function drawDiskTapeStatus()
 {
     var cnvs = document.getElementById("a2display");
-    var ctx = cnvs.getContext("2d");
+    var ctx = cnvs.getContext("2d", { willReadFrequently: true });
 
     if (glbDiskLoading)
     {
@@ -242,7 +251,7 @@ function guiLoop()
     var canvas = document.getElementById("a2display");
     glbLaunchGUI.draw(canvas);
 
-    glbTimeoutId=setTimeout(guiLoop,10);
+    glbTimeoutId=setTimeout(guiLoop,5);
 }
 
 window.onload = (event) => 
@@ -371,6 +380,6 @@ window.onload = (event) =>
     glbDiskii=new disk2();
     glbMMU=new a2mmu();
 
-    glbLaunchGUI=new launchGUI(go,romselCallback,soundOnOffCallback,exp16Callback);
+    glbLaunchGUI=new launchGUI(go,romselCallback,soundOnOffCallback,exp16Callback,drawAlgoCallback);
     glbTimeoutId=setTimeout(guiLoop,10);
 }

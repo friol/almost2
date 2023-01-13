@@ -2,7 +2,7 @@
 
 class guiWindow
 {
-    constructor(px,py,wx,hy,wtitle,runFunc,romselCallback,sndCback,expCbak)
+    constructor(px,py,wx,hy,wtitle,runFunc,romselCallback,sndCback,expCbak,hralgoCbak)
     {
         this.posx=px;
         this.posy=py;
@@ -17,18 +17,23 @@ class guiWindow
 
         this.listOfElements=[];
 
-        var runBut=new guiButton(170,175,70,-1,"Run Emu",this.posx,this.posy,runFunc);
+        var runBut=new guiButton(170,205,70,-1,"Run Emu",this.posx,this.posy,runFunc);
         this.listOfElements.push(runBut);
+
         var mediaDisk=new mediaLoader(12,35,this.posx,this.posy,0);
         this.listOfElements.push(mediaDisk);
         var mediaTape=new mediaLoader(12,75,this.posx,this.posy,1);
         this.listOfElements.push(mediaTape);
-        var romSelector=new guiRadio(12,146,this.posx,this.posy,["Apple ][+","Apple ]["],romselCallback);
+
+        var romSelector=new guiRadio(12,170,this.posx,this.posy,["Apple ][+","Apple ]["],romselCallback);
         this.listOfElements.push(romSelector);
+
         var soundCheckbox=new guiCheckbox(12,112,this.posx,this.posy,true,"Sound",sndCback);
         this.listOfElements.push(soundCheckbox);
         var expCheckbox=new guiCheckbox(120,112,this.posx,this.posy,true,"16kexp",expCbak);
         this.listOfElements.push(expCheckbox);
+        var drawAlgoCheckbox=new guiCheckbox(12,140,this.posx,this.posy,true,"HRalgo",hralgoCbak);
+        this.listOfElements.push(drawAlgoCheckbox);
     }
 
     draw(ctx)

@@ -13,16 +13,16 @@
 
 class launchGUI
 {
-    constructor(runFunc,romselCallback,sndCback,expCback)
+    constructor(runFunc,romselCallback,sndCback,expCback,hralgoCbak)
     {
         this.isActive=true;
 
         // list of gui elements (windows, etc.)
         this.listOfElements=[];
 
-        var winposx=150;
-        var winposy=90;
-        var win=new guiWindow(winposx,winposy,270,180,"Emu window",runFunc,romselCallback,sndCback,expCback);
+        var winposx=145;
+        var winposy=80;
+        var win=new guiWindow(winposx,winposy,270,210,"Emu window",runFunc,romselCallback,sndCback,expCback,hralgoCbak);
         this.listOfElements.push(win);
 
         // mouse handler
@@ -77,7 +77,7 @@ class launchGUI
 
     draw(cvs)
     {
-        var ctx = cvs.getContext("2d");
+        var ctx = cvs.getContext("2d", { willReadFrequently: true });
         ctx.imageSmoothingEnabled= false
         ctx.fillStyle = "black";
         ctx.fillRect(0, 0, cvs.width, cvs.height);

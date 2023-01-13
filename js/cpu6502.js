@@ -260,7 +260,7 @@ class cpu6502
         var fontHeight=16;
         var fontSpace=20;
         var canvas = document.getElementById("mainCanvass");
-        var ctx = canvas.getContext("2d");
+        var ctx = canvas.getContext("2d", { willReadFrequently: true });
 
         ctx.fillColor="white";
         ctx.clearRect(0, 0, canvas.width, canvas.height);        
