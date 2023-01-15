@@ -3,6 +3,7 @@
     almost ][ - 2k22-2k23 
 
     TODO:
+    - tom harte's processor tests
     - joystick handling code
     - audio migrated to AudioWorklet
 
@@ -81,6 +82,27 @@ function go()
     //document.getElementById("partyStarter").disabled = true;
     //document.getElementById("romversionSelect").disabled=true;
     setTimeout(preload,100);
+}
+
+function testCPUFunction()
+{
+    clearTimeout(glbTimeoutId);
+    glbLaunchGUI.isActive=false;
+
+    //var testRunner=new cpuTestRunner("tomhartetests/20.json"); // retest
+    //{ "name": "20 55 13", "initial": { "pc": 379, "s": 125, "a": 158, "x": 137, "y": 52, "p": 230, "ram": [ [379, 32], [380, 85], [381, 19], [341, 173]]}, "final": { "pc": 341, "s": 123, "a": 158, "x": 137, "y": 52, "p": 230, "ram": [ [341, 173], [379, 32], [380, 125], [381, 1]]}, "cycles": [ [379, 32, "read"], [380, 85, "read"], [381, 19, "read"], [381, 1, "write"], [380, 125, "write"], [381, 1, "read"]] },
+    //var testRunner=new cpuTestRunner("tomhartetests/2c.json"); // retest
+    // { "name": "2c f2 0b", "initial": { "pc": 254, "s": 254, "a": 76, "x": 52, "y": 161, "p": 101, "ram": [ [254, 44], [255, 242], [256, 11], [3058, 214], [257, 19]]}, "final": { "pc": 257, "s": 254, "a": 76, "x": 52, "y": 161, "p": 229, "ram": [ [254, 44], [255, 242], [256, 11], [257, 19], [3058, 214]]}, "cycles": [ [254, 44, "read"], [255, 242, "read"], [256, 11, "read"], [3058, 214, "read"]] },
+    //var testRunner=new cpuTestRunner("tomhartetests/39.json"); // retest
+    //var testRunner=new cpuTestRunner("tomhartetests/3d.json"); // retest
+    //var testRunner=new cpuTestRunner("tomhartetests/40.json"); // retest RTI
+    //var testRunner=new cpuTestRunner("tomhartetests/7e.json"); // retest
+    //var testRunner=new cpuTestRunner("tomhartetests/9d.json"); // retest
+    //var testRunner=new cpuTestRunner("tomhartetests/ae.json"); // retest
+    //var testRunner=new cpuTestRunner("tomhartetests/cc.json"); // retest
+    //var testRunner=new cpuTestRunner("tomhartetests/ee.json"); // retest
+
+
 }
 
 function preload()
@@ -250,7 +272,6 @@ function guiLoop()
 {
     var canvas = document.getElementById("a2display");
     glbLaunchGUI.draw(canvas);
-
     glbTimeoutId=setTimeout(guiLoop,5);
 }
 
@@ -380,6 +401,6 @@ window.onload = (event) =>
     glbDiskii=new disk2();
     glbMMU=new a2mmu();
 
-    glbLaunchGUI=new launchGUI(go,romselCallback,soundOnOffCallback,exp16Callback,drawAlgoCallback);
+    glbLaunchGUI=new launchGUI(go,testCPUFunction,romselCallback,soundOnOffCallback,exp16Callback,drawAlgoCallback);
     glbTimeoutId=setTimeout(guiLoop,10);
 }

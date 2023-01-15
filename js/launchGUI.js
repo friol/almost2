@@ -13,7 +13,7 @@
 
 class launchGUI
 {
-    constructor(runFunc,romselCallback,sndCback,expCback,hralgoCbak)
+    constructor(runFunc,testFunc,romselCallback,sndCback,expCback,hralgoCbak)
     {
         this.isActive=true;
 
@@ -22,7 +22,7 @@ class launchGUI
 
         var winposx=145;
         var winposy=80;
-        var win=new guiWindow(winposx,winposy,270,210,"Emu window",runFunc,romselCallback,sndCback,expCback,hralgoCbak);
+        var win=new guiWindow(winposx,winposy,270,210,"Emu window",runFunc,testFunc,romselCallback,sndCback,expCback,hralgoCbak);
         this.listOfElements.push(win);
 
         // mouse handler

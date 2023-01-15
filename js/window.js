@@ -2,7 +2,7 @@
 
 class guiWindow
 {
-    constructor(px,py,wx,hy,wtitle,runFunc,romselCallback,sndCback,expCbak,hralgoCbak)
+    constructor(px,py,wx,hy,wtitle,runFunc,testFunc,romselCallback,sndCback,expCbak,hralgoCbak)
     {
         this.posx=px;
         this.posy=py;
@@ -19,6 +19,8 @@ class guiWindow
 
         var runBut=new guiButton(170,205,70,-1,"Run Emu",this.posx,this.posy,runFunc);
         this.listOfElements.push(runBut);
+        var testBut=new guiButton(170,175,70,-1,"TestCPU",this.posx,this.posy,testFunc);
+        this.listOfElements.push(testBut);
 
         var mediaDisk=new mediaLoader(12,35,this.posx,this.posy,0);
         this.listOfElements.push(mediaDisk);

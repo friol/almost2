@@ -456,9 +456,8 @@ class a2mmu
 
     readAddr16bit(addr)
     {
-        //console.log("Warning: 16bit CPU read");
-        //if (addr<=0xff) return (this.readAddr(addr)+(this.readAddr((addr+1)&0xff)<<8));
-        return (this.readAddr(addr)|((this.readAddr(addr+1)<<8)))&0xffff;
+        if (addr<=0xff) return (this.readAddr(addr)+(this.readAddr((addr+1)&0xff)<<8));
+        return (this.readAddr(addr&0xffff)|(((this.readAddr((addr+1)&0xffff)&0xff)<<8)))&0xffff;
     }
 
     getWrappedAddr(addr)
