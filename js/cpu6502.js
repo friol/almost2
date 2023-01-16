@@ -782,7 +782,8 @@ class cpu6502
             case 0x0D:
             {
                 // ORA absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop = this.mmu.readAddr(operand);
                 this.a |= iop;
                 this.doFlagsNZ(this.a);            
@@ -791,7 +792,8 @@ class cpu6502
             case 0x0E:
             {
                 // ASL absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var loccontent = this.mmu.readAddr(operand);
                 if ((loccontent & 0x80)==0x80)
                 {
@@ -952,7 +954,8 @@ class cpu6502
             case 0x19:
             {
                 // ORA absolute,Y
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop = this.mmu.readAddr((operand+this.y)&0xffff);
                 this.a |= iop;
                 this.doFlagsNZ(this.a);            
@@ -990,7 +993,8 @@ class cpu6502
             case 0x1C:
             {
                 // NOP absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop = this.mmu.readAddr((operand+this.x)&0xffff);
                 elapsedCycles+=this.pageCross(operand,this.x);
                 break;
@@ -998,7 +1002,8 @@ class cpu6502
             case 0x1D:
             {
                 // ORA absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop = this.mmu.readAddr((operand+this.x)&0xffff);
                 this.a |= iop;
                 this.doFlagsNZ(this.a);            
@@ -1008,7 +1013,8 @@ class cpu6502
             case 0x1E:
             {
                 // ASL absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var loccontent = this.mmu.readAddr((operand+this.x)&0xffff);
                 if ((loccontent & 0x80)==0x80)
                 {
@@ -1028,7 +1034,8 @@ class cpu6502
             {
                 // SLO abs,X undocumented
                 console.log("Undoc opcode");
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop = this.mmu.readAddr((operand+this.x)&0xffff);
 
                 this.mmu.writeAddr(operand,(iop*2)&0xff);
@@ -1059,7 +1066,10 @@ class cpu6502
                 this.sp--;
                 if (this.sp<0) this.sp=0xff;
 
-                var jumpAddress=this.mmu.readAddr16bit(this.pc+1);
+                //var jumpAddress=this.mmu.readAddr16bit(this.pc+1);
+                var jumpAddress=this.mmu.readAddr((this.pc+1)&0xffff);
+                jumpAddress|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
+
                 this.pc=jumpAddress;
 
                 jumped=true;
@@ -1195,7 +1205,8 @@ class cpu6502
             case 0x2C:
             {
                 // BIT absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var bitz = this.mmu.readAddr(operand);
                 var tzt = (this.a & bitz);
 
@@ -1210,7 +1221,8 @@ class cpu6502
             case 0x2D:
             {
                 // AND absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop=this.mmu.readAddr(operand);
                 this.a&=iop;
                 this.doFlagsNZ(this.a);
@@ -1307,7 +1319,8 @@ class cpu6502
             case 0x39:
             {
                 // AND absolute,Y
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var addressToRead=(operand+this.y)&0xffff;
                 this.a&=this.mmu.readAddr(addressToRead);
                 this.doFlagsNZ(this.a);
@@ -1323,7 +1336,8 @@ class cpu6502
             case 0x3d:
             {
                 // AND absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var addressToRead=(operand+this.x)&0xffff;
                 this.a&=this.mmu.readAddr(addressToRead);
                 this.doFlagsNZ(this.a);
@@ -1333,7 +1347,8 @@ class cpu6502
             case 0x3E:
             {
                 // ROL absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var opz = this.mmu.readAddr((operand+this.x)&0xffff);
                 var seventh = ((opz >> 7) & 0x01); // save 7th byte
                 opz <<= 1;
@@ -1502,7 +1517,8 @@ class cpu6502
             case 0x4D:
             {
                 // EOR absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop=this.mmu.readAddr(operand);
                 this.a^=iop;
                 this.doFlagsNZ(this.a);
@@ -1511,7 +1527,8 @@ class cpu6502
             case 0x4E:
             {
                 // LSR absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var theb = this.mmu.readAddr(operand);
                 if ((theb & 0x01)!=0)
                 {
@@ -1599,7 +1616,8 @@ class cpu6502
             case 0x59:
             {
                 // EOR absolute,Y
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop=this.mmu.readAddr((operand+this.y)&0xffff);
                 this.a^=iop;
                 this.doFlagsNZ(this.a);
@@ -1615,7 +1633,8 @@ class cpu6502
             case 0x5D:
             {
                 // EOR absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop=this.mmu.readAddr((operand+this.x)&0xffff);
                 this.a^=iop;
                 this.doFlagsNZ(this.a);
@@ -1624,7 +1643,8 @@ class cpu6502
             case 0x5E:
             {
                 // LSR absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var theb = this.mmu.readAddr((operand+this.x)&0xffff);
                 if ((theb & 0x01)!=0)
                 {
@@ -1647,7 +1667,8 @@ class cpu6502
             {
                 // SRE absolute,X undocumented FIXXX
                 console.log("Undoc opcode");
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var origByte = this.mmu.readAddr(operand+this.x);
                 var theb=origByte;
                 if ((theb & 0x01)!=0)
@@ -1798,7 +1819,8 @@ class cpu6502
             case 0x6D:
             {
                 // ADC absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop=this.mmu.readAddr(operand);
                 this.doAdc(iop);
                 break;
@@ -1806,7 +1828,8 @@ class cpu6502
             case 0x6E:
             {
                 // ROR absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
 
                 var bitz = this.mmu.readAddr(operand);
                 var carryset = false;
@@ -1908,7 +1931,8 @@ class cpu6502
             case 0x79:
             {
                 // ADC absolute,Y
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop=this.mmu.readAddr((operand+this.y)&0xffff);
                 this.doAdc(iop);
                 elapsedCycles+=this.pageCross(operand,this.y);
@@ -1917,7 +1941,8 @@ class cpu6502
             case 0x7D:
             {
                 // ADC absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop=this.mmu.readAddr((operand+this.x)&0xffff);
                 this.doAdc(iop);
                 elapsedCycles+=this.pageCross(operand,this.x);
@@ -1926,7 +1951,8 @@ class cpu6502
             case 0x7E:
             {
                 // ROR absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var addressToRead=(operand+this.x)&0xffff;
                 var bitz=this.mmu.readAddr(addressToRead);
 
@@ -2022,21 +2048,24 @@ class cpu6502
             case 0x8C:
             {
                 // STY absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 this.mmu.writeAddr(operand,this.y);
                 break;
             }
             case 0x8d:
             {
                 // STA absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 this.mmu.writeAddr(operand,this.a);
                 break;
             }
             case 0x8e:
             {
                 // STX Operand Absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 this.mmu.writeAddr(operand,this.x);
                 break;
             }
@@ -2097,7 +2126,8 @@ class cpu6502
             case 0x99:
             {
                 // STA absolute,Y
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 this.mmu.writeAddr((operand+this.y)&0xffff,this.a);
                 break;
             }
@@ -2110,7 +2140,8 @@ class cpu6502
             case 0x9D:
             {
                 // STA absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 this.mmu.writeAddr((operand+this.x)&0xffff,this.a);
                 break;
             }
@@ -2198,7 +2229,8 @@ class cpu6502
             case 0xAC:
             {
                 // LDY absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 this.y=this.mmu.readAddr(operand);
                 this.doFlagsNZ(this.y);
                 break;
@@ -2206,7 +2238,8 @@ class cpu6502
             case 0xAD:
             {
                 // LDA absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 this.a=this.mmu.readAddr(operand);
                 this.doFlagsNZ(this.a);
                 break;
@@ -2214,7 +2247,8 @@ class cpu6502
             case 0xAE:
             {
                 // LDX absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 this.x=this.mmu.readAddr(operand);
                 this.doFlagsNZ(this.x);
                 break;
@@ -2223,7 +2257,8 @@ class cpu6502
             {
                 // LAX absolute undocumented
                 console.log("Undoc opcode");
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var laxval=this.mmu.readAddr(operand);
                 this.a=laxval;
                 this.x=laxval;
@@ -2318,7 +2353,8 @@ class cpu6502
             case 0xb9:
             {
                 // LDA absolute,Y
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var val=this.mmu.readAddr((operand+this.y)&0xffff);
                 this.a = val;
                 this.doFlagsNZ(this.a);
@@ -2335,7 +2371,8 @@ class cpu6502
             case 0xbc:
             {
                 // LDY absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var addressToRead=(operand+this.x)&0xffff;
                 this.y=this.mmu.readAddr(addressToRead);
                 this.doFlagsNZ(this.y);
@@ -2345,7 +2382,8 @@ class cpu6502
             case 0xbd:
             {
                 // LDA absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var addressToRead=(operand+this.x)&0xffff;
                 this.a=this.mmu.readAddr(addressToRead);
                 this.doFlagsNZ(this.a);
@@ -2355,7 +2393,8 @@ class cpu6502
             case 0xbe:
             {
                 // LDX absolute,Y
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var addr = (operand + this.y)&0xffff;
                 var memr = this.mmu.readAddr(addr);
                 this.x = memr;
@@ -2415,7 +2454,8 @@ class cpu6502
             case 0xCE:
             {
                 // DEC absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var theb=this.mmu.readAddr(operand);
                 theb--;
                 if (theb<0) theb=0xff;
@@ -2503,7 +2543,8 @@ class cpu6502
             case 0xCC:
             {
                 // CPY absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var mem=this.mmu.readAddr(operand);
                 if (this.y>=mem) this.flagsC=1;
                 else this.flagsC=0;
@@ -2513,7 +2554,8 @@ class cpu6502
             case 0xCD:
             {
                 // CMP absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop=this.mmu.readAddr(operand);
                 if (this.a>=iop) this.flagsC=1;
                 else this.flagsC=0;
@@ -2592,7 +2634,8 @@ class cpu6502
             case 0xD9:
             {
                 // CMP absolute,Y
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop=this.mmu.readAddr((operand+this.y)&0xffff);
                 if (this.a>=iop) this.flagsC=1;
                 else this.flagsC=0;
@@ -2603,7 +2646,8 @@ class cpu6502
             case 0xDD:
             {
                 // CMP absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop=this.mmu.readAddr((operand+this.x)&0xffff);
                 if (this.a>=iop) this.flagsC=1;
                 else this.flagsC=0;
@@ -2614,7 +2658,8 @@ class cpu6502
             case 0xDE:
             {
                 // DEC absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var theb=this.mmu.readAddr((operand+this.x)&0xffff);
                 theb--;
                 if (theb<0) theb=0xff;
@@ -2701,7 +2746,8 @@ class cpu6502
             case 0xEC:
             {
                 // CPX absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop = this.mmu.readAddr(operand);
 
                 if (this.x>=iop) this.flagsC=1;
@@ -2712,7 +2758,8 @@ class cpu6502
             case 0xED:
             {
                 // SBC absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop = this.mmu.readAddr(operand);
                 this.doSbc(iop);
                 break;
@@ -2720,7 +2767,8 @@ class cpu6502
             case 0xEE:
             {
                 // INC absolute
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var curval=this.mmu.readAddr(operand);
                 curval+=1;
                 if (curval>0xff) curval=0;
@@ -2784,7 +2832,8 @@ class cpu6502
             case 0xF9:
             {
                 // SBC absolute,Y
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop = this.mmu.readAddr((operand+this.y)&0xffff);
                 this.doSbc(iop);
                 elapsedCycles+=this.pageCross(operand,this.y);
@@ -2806,7 +2855,8 @@ class cpu6502
             case 0xFD:
             {
                 // SBC absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var iop = this.mmu.readAddr((operand+this.x)&0xffff);
                 this.doSbc(iop);
                 elapsedCycles+=this.pageCross(operand,this.x);
@@ -2815,7 +2865,8 @@ class cpu6502
             case 0xFE:
             {
                 // INC absolute,X
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var curval=this.mmu.readAddr((operand+this.x)&0xffff);
                 curval+=1;
                 if (curval>0xff) curval=0;
@@ -2827,7 +2878,8 @@ class cpu6502
             {
                 // ISC absolute,X undocumented
                 console.log("Undoc opcode");
-                var operand=this.mmu.readAddr16bit(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
+                operand|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
                 var curval=this.mmu.readAddr(operand+this.x);
                 curval+=1;
                 if (curval>0xff) curval=0;

@@ -37,7 +37,7 @@ class cpuTestRunner
         console.log("Starting test ["+this.curTest+"]...");
         for (var testCaseNum=0;testCaseNum<10000;testCaseNum++)
         {
-            //if (this.testJsonObject[testCaseNum].name=="39 6a 39")
+            //if (this.testJsonObject[testCaseNum].name=="3d 74 b1")
             {
                 var testFailed=false;
                 // clean MMU memory

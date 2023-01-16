@@ -40,6 +40,11 @@ class soundBeeper
 
     feed(numCycles)
     {
+        if (!this.audioEnabled) 
+        {
+            return;
+        }
+
         for (var s=0;s<numCycles;s++)
         {
             this.audioQueue.push(this.speakerState);

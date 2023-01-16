@@ -44,7 +44,7 @@ class testMMU
 
     readAddr16bit(addr)
     {
-        if (addr<=0xff) return (this.readAddr(addr)+(this.readAddr((addr+1)&0xff)<<8));
+        if (addr<=0xff) return (((this.readAddr(addr&0xffff))|(this.readAddr((addr+1)&0xff)<<8))&0xffff);
         return (this.readAddr(addr&0xffff)|(((this.readAddr((addr+1)&0xffff)&0xff)<<8)))&0xffff;
     }
 
