@@ -30,6 +30,11 @@ class cpuTestRunner
 
     }
 
+    toBinary(n)
+    {
+        return n.toString(2).padStart(8,'0');
+    }
+
     runTests()
     {
         var numTestsFailed=0;
@@ -37,7 +42,7 @@ class cpuTestRunner
         console.log("Starting test ["+this.curTest+"]...");
         for (var testCaseNum=0;testCaseNum<10000;testCaseNum++)
         {
-            //if (this.testJsonObject[testCaseNum].name=="3d 74 b1")
+            //if (this.testJsonObject[testCaseNum].name=="40 ca 8b")
             {
                 var testFailed=false;
                 // clean MMU memory
@@ -91,7 +96,7 @@ class cpuTestRunner
                 if (cpuFlags!=this.testJsonObject[testCaseNum].final.p)
                 {
                     console.log("testRunner::p is different from test case - case "+this.testJsonObject[testCaseNum].name+
-                    " Emulated p: "+cpuFlags+" Test case's p: "+this.testJsonObject[testCaseNum].final.p);
+                    " Emulated p: "+this.toBinary(cpuFlags)+" Test case's p: "+this.toBinary(this.testJsonObject[testCaseNum].final.p));
                     testFailed=true;
                 }
 

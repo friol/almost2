@@ -27,7 +27,7 @@ class cpu6502
         this.instructionTable[0x04]=[2,3,`NOP %d`]; // undocumented
         this.instructionTable[0x05]=[2,3,`ORA %d`];
         this.instructionTable[0x06]=[2,5,`ASL %d`];
-        this.instructionTable[0x07]=[2,5,`SLO %d`];
+        this.instructionTable[0x07]=[2,5,`SLO %d`]; // undocumented
         this.instructionTable[0x08]=[1,3,`PHP`];
         this.instructionTable[0x09]=[2,2,`ORA %d`];
         this.instructionTable[0x0A]=[1,2,`ASL`];
@@ -71,10 +71,8 @@ class cpu6502
         this.instructionTable[0x36]=[2,6,`ROL %d`];
         this.instructionTable[0x38]=[1,2,`SEC`];
         this.instructionTable[0x39]=[3,4,`AND %d,Y`];
-
-        this.instructionTable[0x3C]=[1,2,`NOP`];
+        this.instructionTable[0x3C]=[1,2,`NOP`]; // undocumented
         this.instructionTable[0x3D]=[3,4,`AND %d`];
-
         this.instructionTable[0x3E]=[3,7,`ROL %d,X`];
 
         this.instructionTable[0x40]=[1,6,`RTI`];
@@ -99,7 +97,7 @@ class cpu6502
         this.instructionTable[0x5A]=[1,2,`NOP`]; // undocumented
         this.instructionTable[0x5D]=[3,4,`EOR %d,X`];//*
         this.instructionTable[0x5E]=[3,7,`LSR %d,X`];//*
-        this.instructionTable[0x5F]=[3,7,`SRE %d,X`];//*
+        this.instructionTable[0x5F]=[3,7,`SRE %d,X`]; // undocumented
 
         this.instructionTable[0x60]=[1,6,`RTS`];
         this.instructionTable[0x61]=[2,6,`ADC (%d,X)`];
@@ -121,7 +119,7 @@ class cpu6502
         this.instructionTable[0x7D]=[3,4,`ADC %d,X`];
         this.instructionTable[0x7E]=[3,7,`ROR %d,X`];
 
-        this.instructionTable[0x80]=[1,2,`SKB`];
+        this.instructionTable[0x80]=[1,2,`SKB`]; // undocumented
         this.instructionTable[0x81]=[2,6,`STA %d`];
         this.instructionTable[0x82]=[2,2,`NOP %d`]; // undocumented
         this.instructionTable[0x84]=[2,3,`STY %d`];
@@ -150,7 +148,7 @@ class cpu6502
         this.instructionTable[0xA4]=[2,3,`LDY %d`];
         this.instructionTable[0xA5]=[2,3,`LDA %d`];
         this.instructionTable[0xA6]=[2,3,`LDX %d`];
-        this.instructionTable[0xA7]=[2,3,`LAX %d`];
+        this.instructionTable[0xA7]=[2,3,`LAX %d`]; // undocumented
         this.instructionTable[0xA8]=[1,2,`TAY`];
         this.instructionTable[0xA9]=[2,2,`LDA %d`];
         this.instructionTable[0xAA]=[1,2,`TAX`];
@@ -161,7 +159,7 @@ class cpu6502
 
         this.instructionTable[0xB0]=[2,2,`BCS %d`];//*
         this.instructionTable[0xB1]=[2,5,`LDA (%d),Y`];//*
-        this.instructionTable[0xB3]=[2,5,`LAX (%d),Y`];//*
+        this.instructionTable[0xB3]=[2,5,`LAX (%d),Y`]; // undocumented
         this.instructionTable[0xB4]=[2,4,`LDY %d,X`];//*
         this.instructionTable[0xB5]=[2,4,`LDA %d,X`];//*
         this.instructionTable[0xB6]=[2,4,`LDX %d,Y`];//*
@@ -183,7 +181,7 @@ class cpu6502
         this.instructionTable[0xC8]=[1,2,`INY`];
         this.instructionTable[0xC9]=[2,2,`CMP %d`];
         this.instructionTable[0xCA]=[1,2,`DEX`];
-        this.instructionTable[0xCB]=[2,2,`AXS %d`]; // FIXXX num cycles
+        this.instructionTable[0xCB]=[2,2,`AXS %d`]; // undocumented - FIXXX num cycles
         this.instructionTable[0xCC]=[3,4,`CPY %d`];
         this.instructionTable[0xCD]=[3,4,`CMP %d`];
         this.instructionTable[0xCE]=[3,6,`DEC %d`];
@@ -218,7 +216,7 @@ class cpu6502
         this.instructionTable[0xF8]=[1,2,`SED`];
         this.instructionTable[0xF9]=[3,4,`SBC %d`];
         this.instructionTable[0xFA]=[1,2,`NOP`]; // undocumented
-        this.instructionTable[0xFC]=[3,4,`NOP %d`];
+        this.instructionTable[0xFC]=[3,4,`NOP %d`]; // undocumented
         this.instructionTable[0xFD]=[3,4,`SBC %d,X`];
         this.instructionTable[0xFE]=[3,7,`INC %d,X`];
         this.instructionTable[0xFF]=[3,7,`ISC %d,X`]; // undocumented
@@ -1056,6 +1054,9 @@ class cpu6502
             case 0x20:
             {
                 // JSR absolute
+
+                var jumpAddress=this.mmu.readAddr((this.pc+1)&0xffff);
+
                 this.mmu.writeAddr(0x100+this.sp,((this.pc+2)>>8)&0xff);
 
                 this.sp--;
@@ -1066,8 +1067,6 @@ class cpu6502
                 this.sp--;
                 if (this.sp<0) this.sp=0xff;
 
-                //var jumpAddress=this.mmu.readAddr16bit(this.pc+1);
-                var jumpAddress=this.mmu.readAddr((this.pc+1)&0xffff);
                 jumpAddress|=this.mmu.readAddr((this.pc+2)&0xffff)<<8;
 
                 this.pc=jumpAddress;
@@ -1370,15 +1369,14 @@ class cpu6502
             case 0x40:
             {
                 // RTI
-                //var operand=this.mmu.readAddr(this.pc+1);
-                //this.doFlagsNZ(this.a);
+                //console.log("CPU::Warning: RTI");
                 
                 this.sp++;
                 if (this.sp>0xff) this.sp=0;
                 var preg = this.mmu.readAddr(0x100|this.sp);
                 this.flagsN=(preg&0x80)?1:0;
                 this.flagsV=(preg&0x40)?1:0;
-                this.flagsB=(preg&0x10)?1:0;
+                //this.flagsB=(preg&0x10)?1:0;
                 this.flagsD=(preg&0x08)?1:0;
                 this.flagsI=(preg&0x04)?1:0;
                 this.flagsZ=(preg&0x02)?1:0;
@@ -1588,7 +1586,7 @@ class cpu6502
             case 0x56:
             {
                 // LSR (logical shift right)
-                var operand=this.mmu.readAddr(this.pc+1);
+                var operand=this.mmu.readAddr((this.pc+1)&0xffff);
                 var theb = this.mmu.readAddr((operand+this.x)&0xff);
 
                 if ((theb & 0x01)!=0)
