@@ -3,12 +3,12 @@
     almost ][ - 2k22-2k23 
 
     TODO:
-    - tom harte's processor tests
     - joystick handling code
     - audio migrated to AudioWorklet
 
     DONE:
 
+    - tom harte's processor tests (documented opcodes)
     - solve the infinite memory usage in audio processor
     - alternative hi-res rendering method + gui switch
         
@@ -40,7 +40,7 @@ var lastLoop = new Date;
 var thisLoop=undefined;
 var glbScheduleInterval=16;
 
-const appleiiFps=60;
+const appleiiFps=59.9227;
 const appleiiCPUSpeed=1022720;
 
 //
@@ -160,7 +160,8 @@ function drawDiskTapeStatus()
 function emulate()
 {
     var iniCycles=0;
-    while (iniCycles<glbSpeaker.bufferLen)
+    var cycles2feed=Math.floor((glbSpeaker.callFreq*glbSpeaker.bufferLen)/appleiiFps);
+    while (iniCycles<cycles2feed)
     {
         var cycElapsed=glbCPU.executeOneOpcode();
         glbTotCycles+=cycElapsed;
@@ -205,12 +206,12 @@ function emulate()
     var fpeez=(1000/frameTime).toFixed(1);
     fpsOut.innerHTML = "going at " + fpeez + " fps";
 
-    if (fpeez<46)
+    if (fpeez<appleiiFps)
     {
         // accelerate!
         if (glbScheduleInterval>1) glbScheduleInterval--;
     }
-    else if (fpeez>46)
+    else if (fpeez>appleiiFps)
     {
         // brake!!!
         glbScheduleInterval++;

@@ -72,10 +72,6 @@ class soundBeeper
         if ((this.audioQueue.length-this.audioqpos)<this.bufferLen) 
         {
             //console.log("Skipping mix because audio queue is not full yet");
-            /*for (var s=0;s<data.length;s++)
-            {
-                data[s]=0;
-            }*/
             return;
         }
 
