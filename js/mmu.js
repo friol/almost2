@@ -28,7 +28,8 @@ class a2mmu
         this.lgcEnabled=true;
         this.lcardReadable  = false; // Language Card readable
         this.lcardBank2Enable = true; // Language Card bank 2 enabled
-        this.writeState=2; // 0 disabled, 1 half enabled, 2 enabled
+        this.lcardWrite=false;
+        this.prewriteFlipFlop=false;
 
         //
 
@@ -217,63 +218,17 @@ class a2mmu
 
     lgcSwitches(addr,writeFlag)
     {
-        if (((addr >> 3) & 1) == 0) this.lcardBank2Enable = true; 
+        if (addr&8) this.lcardBank2Enable = true; 
         else this.lcardBank2Enable = false; 
 
-        if ((addr==0xC080)||(addr==0xC084))
-        {
-            this.lcardReadable = true; 
-            this.writeState=0;
-        }
-        else if ((addr==0xC081)||(addr==0xC085))
-        {
-            this.lcardReadable = false; 
-        }
-        else if ((addr==0xC082)||(addr==0xC086))
-        {
-            this.lcardReadable = false; 
-            this.writeState=0;
-        }
-        else if ((addr==0xC083)||(addr==0xC087))
-        {
-            this.lcardReadable = true; 
-        }
-        else if ((addr==0xC088)||(addr==0xC08C))
-        {
-            this.lcardReadable = true;
-            this.writeState=0;
-        }
-        else if ((addr==0xC089)||(addr==0xC08D))
-        {
-            this.lcardReadable = false;
-        }
-        else if ((addr==0xC08A)||(addr==0xC08E))
-        {
-            this.lcardReadable = false;
-            this.writeState=0;
-        }
-        else if ((addr==0xC08B)||(addr==0xC08F))
-        {
-            this.lcardReadable = true;
-        }
+        if (!(((addr&2) >> 1) ^ (addr&1))) this.lcardReadable = true;
+        else this.lcardReadable = false;
 
-        if (addr&0x01)
-        {
-            if (!writeFlag)
-            {
-                this.writeState++;
-            }
-        }
+        if (this.prewriteFlipFlop && (!writeFlag) && (addr&1)) this.lcardWrite = false;        
 
-        if ((writeFlag)&&(this.writeState==1))
-        {
-            this.writeState=0;
-        }
+        if (!(addr&1)) this.lcardWrite = true;
 
-        if (this.writeState>2)
-        {
-            this.writeState=2;
-        }
+        this.prewriteFlipFlop = (!writeFlag) ? ((addr&1)==1) : false;        
     }
 
     readAddr(addr)
@@ -439,6 +394,7 @@ class a2mmu
             {
                 return this.a2rom[addr-0xd000];
             }
+
             if (this.lcardBank2Enable && (addr < 0xE000))
             {
                 return this.lgcRamBk2[addr - 0xd000];
@@ -557,7 +513,7 @@ class a2mmu
             // disk drive write (slot 6)
             this.diskii.diskWrite(addr,value);
         }
-        else if ((this.writeState==2) && (addr >= 0xd000)) 
+        else if ((this.lcardWrite==false) && (addr >= 0xd000)) 
         {
             if (this.lcardBank2Enable && (addr < 0xE000)) 
             {
