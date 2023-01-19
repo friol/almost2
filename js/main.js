@@ -4,7 +4,9 @@
 
     TODO:
     - joystick handling code
+    - mixed hi res mode
     - audio migrated to AudioWorklet
+    - fix the damn 16k interface
 
     DONE:
 
@@ -23,6 +25,7 @@ var glbDiskii;
 var glbSpeaker;
 var glbTotCycles=0;
 var glbTapeSprite;
+var glbMaxSpeed=false;
 
 var glbLaunchGUI;
 var glbTimeoutId;
@@ -166,7 +169,7 @@ function emulate()
         var cycElapsed=glbCPU.executeOneOpcode();
         glbTotCycles+=cycElapsed;
         iniCycles+=cycElapsed;
-        glbSpeaker.feed(cycElapsed);
+        if (!glbMaxSpeed) glbSpeaker.feed(cycElapsed);
         glbMMU.setCycles(glbTotCycles);
     }
 
@@ -196,6 +199,8 @@ function emulate()
 
     drawDiskTapeStatus();
 
+    glbLaunchGUI.draw(document.getElementById("a2display"));
+
     // calc fps
     const filterStrength = 20;
     var thisFrameTime = (thisLoop=new Date) - lastLoop;
@@ -206,19 +211,28 @@ function emulate()
     var fpeez=(1000/frameTime).toFixed(1);
     fpsOut.innerHTML = "going at " + fpeez + " fps";
 
-    if (fpeez<appleiiFps)
+    if (!glbMaxSpeed)
     {
-        // accelerate!
-        if (glbScheduleInterval>1) glbScheduleInterval--;
-    }
-    else if (fpeez>appleiiFps)
-    {
-        // brake!!!
-        glbScheduleInterval++;
+        if (fpeez<appleiiFps)
+        {
+            // accelerate!
+            if (glbScheduleInterval>1) glbScheduleInterval--;
+        }
+        else if (fpeez>appleiiFps)
+        {
+            // brake!!!
+            glbScheduleInterval++;
+        }
     }
 
-    setTimeout(emulate,glbScheduleInterval);
-    //setTimeout(emulate,16);
+    if (!glbMaxSpeed)
+    {
+        setTimeout(emulate,glbScheduleInterval);
+    }
+    else
+    {
+        setTimeout(emulate,0);
+    }
 }
 
 function handleFileUpload(fls)
@@ -278,6 +292,20 @@ function guiLoop()
     glbTimeoutId=setTimeout(guiLoop,5);
 }
 
+function fullscreenchanged(event) 
+{
+    if (!document.fullscreenElement) 
+    {
+        document.getElementById("titleDiv").style.display="block";
+        document.getElementById("taglineDiv").style.display="block";
+        document.getElementById("a2display").style.position="relative";
+        //document.getElementById("a2display").style.left=0;
+        //document.getElementById("a2display").style.top=0;
+        document.getElementById("a2display").style.width="";
+        document.getElementById("a2display").style.height="";
+    }
+  };
+
 window.onload = (event) => 
 {
     document.onkeydown = function(e)
@@ -291,6 +319,10 @@ window.onload = (event) =>
             updateDebugger();
             drawTextMode();
             e.preventDefault();*/
+        }
+        else if (e.key=="\\")
+        {
+            glbMaxSpeed=true;
         }
         else if (e.key=="Delete")
         {
@@ -399,7 +431,13 @@ window.onload = (event) =>
             glbMMU.joyDownRelease();
             e.preventDefault();
         }
+        else if (e.key=="\\")
+        {
+            glbMaxSpeed=false;
+        }
     }
+
+    document.addEventListener('fullscreenchange', fullscreenchanged);
 
     glbDiskii=new disk2();
     glbMMU=new a2mmu();

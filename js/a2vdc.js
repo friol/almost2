@@ -151,6 +151,10 @@ class apple2vdc
         {
             var currow=this.a2font[chnum][r];
             var charcol=0;
+            var posy=((row*(fontysize))+r)*this.glbResolutionX*4;
+            var posx=(col*(fontxsize))*4;
+            var pozz=posx+posy;
+            
             for (var c=0;c<7;c++)
             {
                 if (((currow>>(7-c-1))&1)==1)
@@ -161,15 +165,9 @@ class apple2vdc
                 {
                     charcol=0;
                 }
-                if (inverted)
-                {
-                    if (charcol==0) charcol=1;
-                    else charcol=0;
-                } 
+                
+                if (inverted) charcol=!charcol;
     
-                var posx=(col*(fontxsize)+c)*4;
-                var posy=((row*(fontysize))+r)*this.glbResolutionX*4;
-                var pozz=posx+posy;
                 if (charcol==0) 
                 {
                     this.glbFrameBuffer[pozz]=0;
@@ -184,6 +182,8 @@ class apple2vdc
                     this.glbFrameBuffer[pozz+2]=0x34;
                     this.glbFrameBuffer[pozz+3]=255;
                 }
+
+                pozz+=4;
             }
         }
     }

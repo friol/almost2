@@ -28,19 +28,20 @@
         <script src="js/mediaLoader.js"></script>
         <script src="js/checkbox.js"></script>
         <script src="js/radio.js"></script>
+        <script src="js/fullScreener.js"></script>
         <script src="js/launchGUI.js"></script>
 
         <script src="js/main.js"></script>
     </head>
 
     <body>
-        <div><img style="position:relative;top:2px" width=110 src="img/almost2logo.png" /> - Apple II emulator v0.7a <span id="fpsSpan"></span></div>
+        <div id="titleDiv"><img style="position:relative;top:2px" width=110 src="img/almost2logo.png" /> - Apple II emulator v0.7a <span id="fpsSpan"></span></div>
         <div id="debuggerDiv">
         </div>
         <canvas width=800 height=400 id="mainCanvass" style="display:none"></canvas>
         <canvas width=560 height=384 id="a2display"></canvas>
         <br/>
-        Retro sci-fi GUI theme by <a href="https://azagaya.itch.io/sci-fi-theme" target="_blank">azagaya</a> - wallpaper by Apple
+        <div id="taglineDiv">Retro sci-fi GUI theme by <a href="https://azagaya.itch.io/sci-fi-theme" target="_blank">azagaya</a> - wallpaper by Apple</div>
         <!--<button id="partyStarter" onclick="go()" style="visibility:hidden">Start emulation!</button><br/>-->
         <input type="file" id="tapeSelector" onchange="handleFileUpload(this.files)" style="visibility:hidden" />
         <input type="file" id="diskSelector" onchange="handleDiskUpload(this.files)" style="visibility:hidden" />

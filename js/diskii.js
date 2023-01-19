@@ -154,6 +154,10 @@ class disk2
             this.nibble = (this.nibble + 1) % 0x1A00;
             return this.driveLatch;        
         }
+        /*else if (addr==0xc0ed)
+        {
+            this.driveLatch=0;
+        }*/
         else if (addr==0xc0ee)
         {
             this.writeMode=false;

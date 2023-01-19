@@ -1,13 +1,6 @@
 /* 
     launch GUI 
     friol 2k23
-
-    -main window
-    -"start emulation" button
-    -apple version chooser (radio)
-    -disk loader
-    -tape loader
-    -modal message box
     
 */
 
@@ -24,6 +17,8 @@ class launchGUI
         var winposy=80;
         var win=new guiWindow(winposx,winposy,270,210,"Emu window",runFunc,testFunc,romselCallback,sndCback,expCback,hralgoCbak);
         this.listOfElements.push(win);
+        var fscr=new fullScreener(530,10);
+        this.listOfElements.push(fscr);
 
         // mouse handler
 
@@ -33,17 +28,30 @@ class launchGUI
         // on mouse move event
         cnvs.onmousemove = function(e)
         {
-            if (!thisInstance.isActive) return;
-
             const rect = cnvs.getBoundingClientRect();
             const px = e.clientX - rect.left;
             const py = e.clientY - rect.top;
-            //console.log(px+" "+py);
 
-            thisInstance.listOfElements.forEach(element => 
+            if (!thisInstance.isActive)
             {
-                element.mouseMove(px,py);
-            });        
+                thisInstance.listOfElements.forEach(element => 
+                {
+                    if (element.elname=="fullScreener")
+                    {
+                        element.mouseMove(px,py);
+                    }
+                });        
+            }
+            else
+            {
+                thisInstance.listOfElements.forEach(element => 
+                {
+                    if (element.elname!="fullScreener")
+                    {
+                        element.mouseMove(px,py);
+                    }
+                });        
+            }
         };
 
         // on mouse click event
@@ -63,33 +71,64 @@ class launchGUI
         // on mouse release click event
         cnvs.onmouseup=function(e)
         {
-            if (!thisInstance.isActive) return;
             const rect = cnvs.getBoundingClientRect();
             const px = e.clientX - rect.left;
             const py = e.clientY - rect.top;
-            //console.log(px+" "+py);
-            thisInstance.listOfElements.forEach(element => 
+
+            if (!thisInstance.isActive)
             {
-                element.mouseUp(px,py);
-            });        
+                thisInstance.listOfElements.forEach(element => 
+                {
+                    if (element.elname=="fullScreener")
+                    {
+                        element.mouseUp(px,py);
+                    }
+                });        
+            }
+            else
+            {
+                thisInstance.listOfElements.forEach(element => 
+                {
+                    if (element.elname!="fullScreener")
+                    {
+                        element.mouseUp(px,py);
+                    }
+                });        
+            }
         };
     }
 
     draw(cvs)
     {
         var ctx = cvs.getContext("2d", { willReadFrequently: true });
-        ctx.imageSmoothingEnabled= false
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, cvs.width, cvs.height);
-        const splashImg=document.getElementById("splashImg");
-        ctx.globalAlpha = 0.5;
-        ctx.drawImage(splashImg,0,0);
-        ctx.globalAlpha = 1.0;
-
-        this.listOfElements.forEach(element => 
+        
+        if (this.isActive)
         {
-            element.draw(ctx);
-            
-        });
+            ctx.imageSmoothingEnabled= false
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, cvs.width, cvs.height);
+            const splashImg=document.getElementById("splashImg");
+            ctx.globalAlpha = 0.5;
+            ctx.drawImage(splashImg,0,0);
+            ctx.globalAlpha = 1.0;
+
+            this.listOfElements.forEach(element => 
+            {
+                if (element.elname!="fullScreener")
+                {
+                    element.draw(ctx);
+                }
+            });
+        }
+        else
+        {
+            this.listOfElements.forEach(element => 
+            {
+                if (element.elname=="fullScreener")
+                {
+                    element.draw(ctx);
+                }
+            });
+        }
     }
 }
