@@ -161,7 +161,8 @@ class disk2
         else if (addr==0xc0ee)
         {
             this.writeMode=false;
-            return 0x80; // assume disk is read-only            
+            //return 0x80; // assume disk is read-only            
+            return 0;
         }
         else if (addr==0xc0ef)
         {

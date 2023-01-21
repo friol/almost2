@@ -3,13 +3,13 @@
     almost ][ - 2k22-2k23 
 
     TODO:
-    - joystick handling code
-    - mixed hi res mode
+    - proper joystick handling code
     - audio migrated to AudioWorklet
     - fix the damn 16k interface
 
     DONE:
 
+    - mixed hi res mode
     - tom harte's processor tests (documented opcodes)
     - solve the infinite memory usage in audio processor
     - alternative hi-res rendering method + gui switch
@@ -42,6 +42,7 @@ var frameTime = 0;
 var lastLoop = new Date;
 var thisLoop=undefined;
 var glbScheduleInterval=16;
+var glbInitialtime;
 
 const appleiiFps=59.9227;
 const appleiiCPUSpeed=1022720;
@@ -123,6 +124,9 @@ function preload()
         glbSpeaker=new soundBeeper(appleiiCPUSpeed,appleiiFps,glbSoundOn);
         glbMMU.setSpeaker(glbSpeaker);
         glbMMU.setDiskII(glbDiskii);
+
+        glbInitialtime=new Date;
+
         setTimeout(emulate,10);
     }
     else
@@ -130,6 +134,19 @@ function preload()
         // roms not loaded. wait another 100ms
         setTimeout(preload,100);
     }
+}
+
+function drawFFWDIcon()
+{
+    var cnvs = document.getElementById("a2display");
+    var ctx = cnvs.getContext("2d", { willReadFrequently: true });
+
+    ctx.font='10px pixelsquare';
+    ctx.fillStyle = 'white';
+    ctx.textBaseline = 'top';
+
+    ctx.fillText(">>",18,360);        
+    ctx.fillText("ffwd",10,372);        
 }
 
 function drawDiskTapeStatus()
@@ -162,6 +179,7 @@ function drawDiskTapeStatus()
 
 function emulate()
 {
+    //glbMaxSpeed=true;
     var iniCycles=0;
     var cycles2feed=Math.floor((glbSpeaker.callFreq*glbSpeaker.bufferLen)/appleiiFps);
     while (iniCycles<cycles2feed)
@@ -199,7 +217,16 @@ function emulate()
 
     drawDiskTapeStatus();
 
+    if (glbMaxSpeed) drawFFWDIcon();
+
     glbLaunchGUI.draw(document.getElementById("a2display"));
+
+    // benchmark
+    /*if (glbVDC.glbFrameNum==1200)
+    {
+        var elapsed=(new Date)-glbInitialtime;
+        alert("1200 frames in ["+elapsed+"]");
+    }*/
 
     // calc fps
     const filterStrength = 20;
@@ -233,6 +260,7 @@ function emulate()
     {
         setTimeout(emulate,0);
     }
+    //setTimeout(emulate,0);
 }
 
 function handleFileUpload(fls)

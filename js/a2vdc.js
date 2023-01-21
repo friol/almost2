@@ -92,7 +92,6 @@ class apple2vdc
         ];        
 
         this.glbFrameNum=0;
-        this.glbFrameBuffer;
 
         this.glbImgData=undefined;
         this.glbCanvasRenderer=undefined;
@@ -108,21 +107,34 @@ class apple2vdc
         this.page=0; // PAGE1 or PAGE2
 
         this.glbFrameBuffer=new Uint8ClampedArray(this.glbResolutionX*this.glbResolutionY*4);
+        var pix=0;
         for (var i=0;i<(this.glbResolutionX*this.glbResolutionY*4);i++)
         {
-            this.glbFrameBuffer[i]=0;
+            if (pix==3) 
+            {
+                this.glbFrameBuffer[i]=255;
+                pix=0;
+            }
+            else 
+            {
+                this.glbFrameBuffer[i]=0;
+                pix++;
+            }
         }        
 
         var canvas = document.getElementById("a2display");
         this.ctx = canvas.getContext("2d", { willReadFrequently: true });
 
+        this.glbFb2=undefined;
         if (highResAlgoNum)
         {
             this.highResAlgo=1; // 1 ideal, 2 real
+            this.glbFb2=new Uint8ClampedArray(560*384*4);
         }
         else
         {
             this.highResAlgo=2;
+            this.glbFb2=new Uint8ClampedArray(280*192*4);
         }
     }
 
@@ -147,44 +159,51 @@ class apple2vdc
     
         chnum%=0x40;
     
+        const posx=(col*(fontxsize))*4;
+        var posy=((row*(fontysize)))*this.glbResolutionX*4;
+        var pozz=posx+posy;
+        
         for (var r=0;r<fontysize;r++)
         {
             var currow=this.a2font[chnum][r];
-            var charcol=0;
-            var posy=((row*(fontysize))+r)*this.glbResolutionX*4;
-            var posx=(col*(fontxsize))*4;
-            var pozz=posx+posy;
             
             for (var c=0;c<7;c++)
             {
                 if (((currow>>(7-c-1))&1)==1)
                 {
-                    charcol=1;
+                    if (inverted) 
+                    {
+                        this.glbFrameBuffer[pozz]=0;
+                        this.glbFrameBuffer[pozz+1]=0;
+                        this.glbFrameBuffer[pozz+2]=0;
+                    }
+                    else
+                    {
+                        this.glbFrameBuffer[pozz]=0x8a;
+                        this.glbFrameBuffer[pozz+1]=0xe2;
+                        this.glbFrameBuffer[pozz+2]=0x34;
+                    }
                 }
                 else
                 {
-                    charcol=0;
+                    if (inverted)
+                    {
+                        this.glbFrameBuffer[pozz]=0x8a;
+                        this.glbFrameBuffer[pozz+1]=0xe2;
+                        this.glbFrameBuffer[pozz+2]=0x34;
+                    }
+                    else
+                    {
+                        this.glbFrameBuffer[pozz]=0;
+                        this.glbFrameBuffer[pozz+1]=0;
+                        this.glbFrameBuffer[pozz+2]=0;
+                    }
                 }
                 
-                if (inverted) charcol=!charcol;
-    
-                if (charcol==0) 
-                {
-                    this.glbFrameBuffer[pozz]=0;
-                    this.glbFrameBuffer[pozz+1]=0;
-                    this.glbFrameBuffer[pozz+2]=0;
-                    this.glbFrameBuffer[pozz+3]=255;
-                }
-                else
-                {
-                    this.glbFrameBuffer[pozz]=0x8a;
-                    this.glbFrameBuffer[pozz+1]=0xe2;
-                    this.glbFrameBuffer[pozz+2]=0x34;
-                    this.glbFrameBuffer[pozz+3]=255;
-                }
-
                 pozz+=4;
             }
+
+            pozz+=(this.glbResolutionX*4)-(7*4);
         }
     }
 
@@ -209,14 +228,14 @@ class apple2vdc
                     this.glbFrameBuffer[pozz]=this.loresPalette[loCol][0];
                     this.glbFrameBuffer[pozz+1]=this.loresPalette[loCol][1];
                     this.glbFrameBuffer[pozz+2]=this.loresPalette[loCol][2];
-                    this.glbFrameBuffer[pozz+3]=255;
+                    //this.glbFrameBuffer[pozz+3]=255;
                 }
                 else
                 {
                     this.glbFrameBuffer[pozz]=this.loresPalette[hiCol][0];
                     this.glbFrameBuffer[pozz+1]=this.loresPalette[hiCol][1];
                     this.glbFrameBuffer[pozz+2]=this.loresPalette[hiCol][2];
-                    this.glbFrameBuffer[pozz+3]=255;
+                    //this.glbFrameBuffer[pozz+3]=255;
                 }
             }
         }
@@ -428,26 +447,22 @@ class apple2vdc
             [255,255,255]
         ];
 
-        var fb2;
-
-        if (this.highResAlgo==1)
-        {
-            fb2=new Uint8ClampedArray(dblSizeX*dblSizeY*4);
-        }
-        else
-        {
-            fb2=new Uint8ClampedArray(280*192*4);
-        }
-
         var acounter=0;
         var y=0;
-        for (var r=0;r<this.glbResolutionY/8;r++)
+
+        var maxr=this.glbResolutionY/8;
+        if (this.mixedGraph) 
+        {
+            maxr=(this.glbResolutionY-(4*8))/8;
+        }
+
+        for (var r=0;r<maxr;r++)
         {
             var addrAdder=0;
             for (var rb=0;rb<8;rb++)
             {
                 if (this.highResAlgo==1) this.drawHiresLine(y,dblSizeX,theMMU,addrArray,pageAdder,addrAdder,hgrColors,acounter);
-                else this.drawHiresLineAlgo2(y,theMMU,addrArray,acounter,pageAdder,addrAdder,fb2,hgrRGBcolors);
+                else this.drawHiresLineAlgo2(y,theMMU,addrArray,acounter,pageAdder,addrAdder,this.glbFb2,hgrRGBcolors);
 
                 addrAdder+=0x400;
                 y+=1;
@@ -455,6 +470,40 @@ class apple2vdc
             
             acounter+=1;
         }        
+
+        // if in mixed mode, draw last 4 rows of text
+        if (this.mixedGraph) 
+        {
+            var txtbaseAddr=0x400+(this.page*0x400);
+            for (var row=0;row<24/3;row++)
+            {
+                var realRow=row;
+                for (var col=0;col<40;col++)
+                {
+                    var curChar=theMMU.readAddr(txtbaseAddr);
+                    if (realRow>=20) this.drawTextmodeChar(col,realRow,curChar,ctx);
+                    txtbaseAddr++;
+                }
+        
+                realRow+=8;
+                for (var col=0;col<40;col++)
+                {
+                    var curChar=theMMU.readAddr(txtbaseAddr);
+                    if (realRow>=20) this.drawTextmodeChar(col,realRow,curChar,ctx);
+                    txtbaseAddr++;
+                }
+        
+                realRow+=8;
+                for (var col=0;col<40;col++)
+                {
+                    var curChar=theMMU.readAddr(txtbaseAddr);
+                    if (realRow>=20) this.drawTextmodeChar(col,realRow,curChar,ctx);
+                    txtbaseAddr++;
+                }
+        
+                txtbaseAddr+=8; // "screen holes"
+            }
+        }
 
         // blit
 
@@ -467,26 +516,72 @@ class apple2vdc
             {
                 for (var px=0;px<dblSizeX;px++)
                 {
-                    fb2[fbpos+0]=hgrRGBcolors[hgrColors[hpos]][0];
-                    fb2[fbpos+1]=hgrRGBcolors[hgrColors[hpos]][1];
-                    fb2[fbpos+2]=hgrRGBcolors[hgrColors[hpos]][2];
-                    fb2[fbpos+3]=255;
-                    fb2[fbpos+0+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][0];
-                    fb2[fbpos+1+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][1];
-                    fb2[fbpos+2+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][2];
-                    fb2[fbpos+3+(dblSizeX*4)]=255;
+                    this.glbFb2[fbpos+0]=hgrRGBcolors[hgrColors[hpos]][0];
+                    this.glbFb2[fbpos+1]=hgrRGBcolors[hgrColors[hpos]][1];
+                    this.glbFb2[fbpos+2]=hgrRGBcolors[hgrColors[hpos]][2];
+                    this.glbFb2[fbpos+3]=255;
+                    this.glbFb2[fbpos+0+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][0];
+                    this.glbFb2[fbpos+1+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][1];
+                    this.glbFb2[fbpos+2+(dblSizeX*4)]=hgrRGBcolors[hgrColors[hpos]][2];
+                    this.glbFb2[fbpos+3+(dblSizeX*4)]=255;
                     hpos+=1;
                     fbpos+=4;
                 }
 
                 fbpos+=dblSizeX*4;
             }
+
+            // eventually add textmode chars
+            if (this.mixedGraph)
+            {
+                fbpos=(dblSizeY-(4*8*2))*(dblSizeX*4);
+
+                for (var py=(dblSizeY-(4*8*2));py<dblSizeY;py+=2)
+                {
+                    for (var px=0;px<dblSizeX;px+=2)
+                    {
+                        const idx=(((px/2)+((py/2)*280)))*4;
+                        this.glbFb2[fbpos+0]=this.glbFrameBuffer[idx+0];
+                        this.glbFb2[fbpos+1]=this.glbFrameBuffer[idx+1];
+                        this.glbFb2[fbpos+2]=this.glbFrameBuffer[idx+2];
+                        this.glbFb2[fbpos+3]=255;
+                        fbpos+=4;
+                        this.glbFb2[fbpos+0]=this.glbFrameBuffer[idx+0];
+                        this.glbFb2[fbpos+1]=this.glbFrameBuffer[idx+1];
+                        this.glbFb2[fbpos+2]=this.glbFrameBuffer[idx+2];
+                        this.glbFb2[fbpos+3]=255;
+                        fbpos+=4;
+                    }
+
+                    fbpos+=dblSizeX*4;
+                }
+            }
+        }
+        else
+        {
+            if (this.mixedGraph)
+            {
+                var fbpos=(192-(4*8))*(280*4);
+
+                for (var py=(192-(4*8));py<192;py++)
+                {
+                    for (var px=0;px<280;px++)
+                    {
+                        const idx=(((px)+((py)*280)))*4;
+                        this.glbFb2[fbpos+0]=this.glbFrameBuffer[idx+0];
+                        this.glbFb2[fbpos+1]=this.glbFrameBuffer[idx+1];
+                        this.glbFb2[fbpos+2]=this.glbFrameBuffer[idx+2];
+                        this.glbFb2[fbpos+3]=255;
+                        fbpos+=4;
+                    }
+                }
+            }
         }
 
         if (this.highResAlgo==1)
         {
             if (this.glbImgData2==undefined) this.glbImgData2 = ctx.getImageData(0, 0, dblSizeX, dblSizeY);
-            this.glbImgData2.data.set(fb2);
+            this.glbImgData2.data.set(this.glbFb2);
         
             if (this.glbCanvasRenderer2==undefined)
             {
@@ -500,7 +595,7 @@ class apple2vdc
         else
         {
             if (this.glbImgData2==undefined) this.glbImgData2 = ctx.getImageData(0, 0, 280, 192);
-            this.glbImgData2.data.set(fb2);
+            this.glbImgData2.data.set(this.glbFb2);
         
             if (this.glbCanvasRenderer2==undefined)
             {
